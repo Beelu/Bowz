@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  frontend:
+    build: ./
+    container_name: backend
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./src:/app/src
+    stdin_open: true
+    tty: true
