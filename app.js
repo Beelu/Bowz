@@ -71,11 +71,20 @@ app.get("/login", function(req, res){
 
 //登入實作
 app.post("/login", function (req, res, next) {
-  passport.authenticate("local",
-    {
-      successRedirect: "/",
-      failureRedirect: "/login",
-    })(req, res);
+  // passport.authenticate("local",
+  //   {
+  //     successRedirect: "/",
+  //     failureRedirect: "/login",
+  //   })(req, res);
+
+	passport.authenticate('local', function(err, user, info) {
+  	if (err) { return next(err); }
+    if (!user) { return res.json({message:'user not exist!', user:user}); }
+    req.logIn(user, function(err) {
+  		if (err) { return next(err); }
+      return res.json({message:'login success!', user:user});
+    });
+  })(req, res, next);
 });
 
 //註冊實作
@@ -172,7 +181,7 @@ app.post("/forget", (req, res) => {
 		},//最後的錯誤處理
 		function(err){
 			if(err) console.log(err);
-			res.redirect("/forget");
+			res.status(500).json({error:err});
 		}
 	]);
 });
@@ -203,9 +212,28 @@ app.post("/reset/:token", (req, res) => {
 	});
 });
 
-//==================================一般功能================================//
+//==================================一般功能(尚未連線)================================//
+//進入房間名單
 app.post("/enterRoom", (req, res)=>{
+	thisRoom = allRooms.get(req.body.roomNum);
+	thisRoom.Users.set(data.ID, {username: data.username, money: 0, isManager:false})				//設定進入使用者的資料
+	thisRoom.total = thisRoom.Users.size;
+	allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
+	
+	console.log(allRooms.get(data.roomNum));
+});
 
+//開新房間
+app.post("/openRoom", (req, res)=>{
+	roomID = '9487'//Math.floor(Math.random()*66500).toString();
+
+	var Users = new Map();				//新增該房間使用者名單
+	Users.set(data.ID, {username: data.username, isManager:true});					//設定進入開房者的資料
+	allRooms.set(roomID, {gameType:data.gameType, ratio:data.ratio, initMoney:data.initMoney,
+												saleMin:data.saleMin, saleMax:data.saleMax, buyMin:data.buyMin, buyMax:data.buyMax, item:data.item, Users:Users, total:1});
+		
+	console.log(roomID);
+	res.json({pinCode: roomID});
 });
 
 //===================================socket.io=======================================//
@@ -214,12 +242,12 @@ io.on('connection',(socket)=>{
 	socket.on('enterRoom', (data)=>{
 		socket.join(data.roomNum);
 
-		thisRoom = allRooms.get(data.roomNum);
-		thisRoom.Users.set(data.ID, {username: data.username, money: 0, isManager:false})				//設定進入使用者的資料
-		thisRoom.total += 1;
-		allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
+		// thisRoom = allRooms.get(data.roomNum);
+		// thisRoom.Users.set(data.ID, {username: data.username, money: 0, isManager:false})				//設定進入使用者的資料
+		// thisRoom.total = thisRoom.Users.size;
+		// allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 		
-		console.log(allRooms.get(data.roomNum));
+		// console.log(allRooms.get(data.roomNum));
 	});
 
 	//開新房間
@@ -249,69 +277,77 @@ io.on('connection',(socket)=>{
 		socket.leave(data.roomNum);
 	});
 
-	//離開房間
-
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
 	socket.on('startGame', (data)=>{
-		let thisRoom = allRooms.get(data.roomNum);
 
+		let thisRoom = allRooms.get(data.roomNum);
 		let total = thisRoom.total;
 		let saleMax = thisRoom.saleMax;
 		let buyMax = thisRoom.buyMax;
 		let saleMin = thisRoom.saleMin;
 		let buyMin = thisRoom.buyMin;
-		let ratio = thisRoom.ratio;
 		let interval = thisRoom.interval;
-		let i=0;
+		let ratio;
+		let i=1;
 
-		if(ratio == null){
+		if(thisRoom.ratio == null){
 			do{
 				ratio = randomNormal({mean: 0.5})
 			}while( ratio < 0.3 || ratio > 0.7)
+		}else{
+			ratio = thisRoom.ratio;
 		}
 
-		let sellerNum = ratio * total/2;
+		let sellerNum = ratio * total;
 
-		thisRoom.Users.forEach(function(value, key) {
-			if(i<sellerNum){
-				money = Math.floor(Math.random() * saleMax) + saleMin
-				interval = interval * Math.ceil(money/interval)
-				thisRoom.Users.set(key,{role : 'seller' , money : money })
+		thisRoom.Users.forEach(function(value,key) {
+			if(i<=sellerNum){
+				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'seller' 
+				value.money = money 
 			}
 			else{
-				money = Math.floor(Math.random() * buyMax) + buyMin
-				intervel = interval * Math.ceil(money/interval)
-				thisRoom.Users.set(key,{role : 'buyer' , money : money })
+				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'buyer' 
+				value.money = money 
 			}
+			thisRoom.Users.set(key,value)
 			i++;
 		  });
-		socket.emit('startGameData', thisRoom.Users);
+	
+		allRooms.set(data.roomNum, thisRoom);	
+		console.log(allRooms)
+
+		userData = thisRoom.Users
+		io.emit('startGameData', Array.from(userData));
 	});
 
 
 	socket.on('lineChart',(data)=>{
 
-		let buyerData;
-		let sellerData;
-		let roleData;
-		let thisRoom = allRooms.get(data.roomNum);
+		let buyerData = [];
+		let sellerData = [];
+		thisRoom = allRooms.get(data.roomNum);
 
 		thisRoom.Users.forEach(function(value, key) {
 			if(value.role=="buyer"){
-				buyerData = buyerData.push([value.role,value.money]);
+				buyerData.push({money:value.money});
 			}else{
-				sellerData = sellerData.push([value.role,value.money]);
+				sellerData.push({money:value.money});
 			}
 		  });
 
-		roleData = roleData.push(buyerData);
-		roleData = roleData.push(sellerData);
+		allMoney.set('buyer',buyerData);
+		allMoney.set('seller',sellerData);
 
-		socket.emit('lineChartData',roleData);
+		console.log(allMoney)
+
+		io.emit('lineChartData',Array.from(allMoney));
 
 	})
-
 	//===============林育緹部分結束==================//
 
 	//===============高鵬雲的部分====================//

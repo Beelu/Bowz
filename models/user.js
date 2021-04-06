@@ -8,6 +8,8 @@ var userSchema = new mongoose.Schema({
   studentID:Number,
   name:String,
   avatar:Number,
+  allScore:String,
+  teacher:String,
   isManager:Boolean,
   resetPWtoken: String,
 	resetPWexpires: String

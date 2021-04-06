@@ -16,19 +16,15 @@
       //進入房間
       $('#enterRoom').click(function () {
         var socket = io();
-        socket.on('connect', function () {
-          socket.emit('enterRoom', {roomNum: $("#roomID").val(), username: $("#username").val(), ID: $("#ID").val()});
-        });
+        socket.emit('enterRoom', {roomNum: $("#roomID").val(), username: $("#username").val(), ID: $("#ID").val()});
       })
 
       //開新房間
       $('#openRoom').click(function () {
         var socket = io();
-        socket.on('connect', function () {
-          socket.emit('openRoom', { gameType: 1, ratio: 0.7, initMoney: 100,
-          saleMin: 0, saleMax: 130, buyMin: 0, buyMax: 130, item: "apple",
-          username: $("#username").val(), ID: $("#ID").val() });
-        });
+        socket.emit('openRoom', { gameType: 1, ratio: 0.7, initMoney: 100,
+        saleMin: 0, saleMax: 130, buyMin: 0, buyMax: 130, item: "apple",
+        username: $("#username").val(), ID: $("#ID").val() });
       });
     });
   </script>

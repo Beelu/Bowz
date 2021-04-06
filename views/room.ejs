@@ -18,6 +18,9 @@
 
 <script>
   const socket = io();
+  // socket.on('connect', function () {
+  //   socket.emit('enterRoom', { roomNum: '$("#roomID").val()', username: $("#username").val(), ID: $("#ID").val() });
+  // });
   //關閉房間
   $('#closeRoom').click(function () {
     socket.emit('closeRoom', {roomNum: "9487"});
