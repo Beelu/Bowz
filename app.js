@@ -71,12 +71,6 @@ app.get("/login", function(req, res){
 
 //登入實作
 app.post("/login", function (req, res, next) {
-  // passport.authenticate("local",
-  //   {
-  //     successRedirect: "/",
-  //     failureRedirect: "/login",
-  //   })(req, res);
-
 	passport.authenticate('local', function(err, user, info) {
   	if (err) { return next(err); }
     if (!user) { return res.json({message:'user not exist!', user:user}); }
@@ -89,13 +83,16 @@ app.post("/login", function (req, res, next) {
 
 //註冊實作
 app.post("/register", function(req, res){
-	var newuser = new user({username: req.body.username, email: req.body.email});
+	var newuser = new user({schoolname:req.body.schoolname, 
+													ID:req.body.ID,
+													username: req.body.username, 
+													email: req.body.email});
 	user.register(newuser, req.body.password, function(err, user){
 		if(err){
-			return res.redirect("/register");
+			return res.status(500).json({message:"error", detail:err});
 		}
 		passport.authenticate("local")(req, res, function(){
-			res.redirect("/register");
+			res.json({message:"success", user:user});
 		});
 	});
 });
@@ -129,7 +126,7 @@ app.get("/forget", (req, res)=>{
 app.get("/reset/:token", (req, res) => {
 	user.findOne({resetPWtoken:req.params.token, resetPWexpires:{$gt:Date.now()}}, (err, founduser) => {	//$gt=greater than
 		if(err){
-			return res.redirect("/forget");
+			return res.status(500).json({message:"error", detail:err});
 		}
 		res.render("reset", {token:req.params.token});
 	});
@@ -149,7 +146,7 @@ app.post("/forget", (req, res) => {
 		function(token, done){
 			user.findOne({email:req.body.email}, function(err, founduser){
 				if(!founduser){
-					return res.redirect("forget");
+					return res.status(404).json({message:"error, user doesn't exist."});
 				}
 				
 				founduser.resetPWtoken = token;
@@ -181,7 +178,7 @@ app.post("/forget", (req, res) => {
 		},//最後的錯誤處理
 		function(err){
 			if(err) console.log(err);
-			res.status(500).json({error:err});
+			res.status(500).json({message:"error", detail:err});
 		}
 	]);
 });
@@ -190,24 +187,24 @@ app.post("/forget", (req, res) => {
 app.post("/reset/:token", (req, res) => {
 	user.findOne({resetPWtoken:req.params.token, resetPWexpires:{$gt:Date.now()}}, (err, founduser) => {
 		if(err){					//搜尋資料庫發生錯誤
-			return res.redirect("back");
+			return res.status(500).json({message:"error", detail:err});
 		}	
 		if(req.body.password === req.body.confirm){
 			founduser.setPassword(req.body.password, (err) => {
 				if(err){			//重新設定密碼時發生錯誤
-					return res.redirect("back");
+					return res.status(500).json({message:"error", detail:err});
 				}
 				founduser.resetPWtoken = undefined;
 				founduser.resetPWexpires = undefined;
 				
 				founduser.save((err) => {				//儲存重設密碼回資料庫
 					req.logIn(founduser, (err) => {					//儲存完後自動登入
-						res.redirect("/");
+						res.json({message:"Successfully reset password, automatically login."});
 					});
 				});
 			});
 		}else{			//如果密碼兩個打得不一樣
-			return res.redirect("back");
+			return res.json({messageL:"password not equal."});
 		}
 	});
 });
@@ -228,9 +225,20 @@ app.post("/openRoom", (req, res)=>{
 	roomID = '9487'//Math.floor(Math.random()*66500).toString();
 
 	var Users = new Map();				//新增該房間使用者名單
-	Users.set(data.ID, {username: data.username, isManager:true});					//設定進入開房者的資料
-	allRooms.set(roomID, {gameType:data.gameType, ratio:data.ratio, initMoney:data.initMoney,
-												saleMin:data.saleMin, saleMax:data.saleMax, buyMin:data.buyMin, buyMax:data.buyMax, item:data.item, Users:Users, total:1});
+	Users.set(req.body.ID, {username: req.body.username, isManager:true});					//設定進入開房者的資料
+	allRooms.set(roomID, {roomName:req.body.roomName,
+												roundNum:req.body.roundNum,
+												gameType:req.body.gameType, 
+												ratio:req.body.ratio, 
+												initMoney:req.body.initMoney,
+												saleMin:req.body.saleMin, 
+												saleMax:req.body.saleMax, 
+												buyMin:req.body.buyMin, 
+												buyMax:req.body.buyMax, 
+												item:req.body.item, 
+												interval:req.body.interval,
+												Users:Users, 
+												total:1});
 		
 	console.log(roomID);
 	res.json({pinCode: roomID});
@@ -241,41 +249,15 @@ io.on('connection',(socket)=>{
 	//進入房間
 	socket.on('enterRoom', (data)=>{
 		socket.join(data.roomNum);
-
-		// thisRoom = allRooms.get(data.roomNum);
-		// thisRoom.Users.set(data.ID, {username: data.username, money: 0, isManager:false})				//設定進入使用者的資料
-		// thisRoom.total = thisRoom.Users.size;
-		// allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
-		
-		// console.log(allRooms.get(data.roomNum));
 	});
 
-	//開新房間
-	socket.on('openRoom', (data)=>{
-		roomID = '9487'//Math.floor(Math.random()*66500).toString();
-
-		socket.join(roomID);
-
-		var Users = new Map();				//新增該房間使用者名單
-		Users.set(data.ID, {username: data.username, isManager:true});					//設定進入開房者的資料
-		//allUsers.set(data.roomID, {Users: Users});
-
-		allRooms.set(roomID, {gameType:data.gameType, ratio:data.ratio, initMoney:data.initMoney,
-													saleMin:data.saleMin, saleMax:data.saleMax, buyMin:data.buyMin, buyMax:data.buyMax, item:data.item, Users:Users, total:1});
-		
-		//回傳房間pin code
-		socket.emit('givePinCode', {pinCode: roomID});
-
-		console.log(roomID);
-	});
-
-	//關閉房間
-	socket.on('closeRoom', (data)=>{
-		//var roomUsers = io.sockets.adapter.rooms.get(data.roomNum);
-		//io.sockets.adapter.rooms.delete(data.roomNum);
-		console.log(io.sockets.adapter.rooms);
-		socket.leave(data.roomNum);
-	});
+	// //關閉房間
+	// socket.on('closeRoom', (data)=>{
+	// 	//var roomUsers = io.sockets.adapter.rooms.get(data.roomNum);
+	// 	//io.sockets.adapter.rooms.delete(data.roomNum);
+	// 	console.log(io.sockets.adapter.rooms);
+	// 	socket.leave(data.roomNum);
+	// });
 
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
