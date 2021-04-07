@@ -1,3 +1,5 @@
+const { countReset } = require('console');
+
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
 }
@@ -18,6 +20,7 @@ var express               = require("express"),
 		async 								= require("async"),
 		nodemailer						= require("nodemailer"),
 		crypto 								= require("crypto"),
+		cors 									= require("cors"),					
 		randomNormal 		 		  = require('random-normal');
 
 //房間所需要之暫存變數
@@ -27,6 +30,7 @@ var allRooms = new Map();
 //初始設置
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
+app.use(cors());
 
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
