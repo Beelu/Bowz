@@ -71,12 +71,12 @@ app.get("/login", function(req, res){
 
 //登入實作
 app.post("/login", function (req, res, next) {
-	passport.authenticate('local', function(err, user, info) {
+	passport.authenticate('local', function(err, user) {
   	if (err) { return next(err); }
-    if (!user) { return res.json({message:'user not exist!', user:user}); }
+    if (!user) { return res.status(500).json({message:'user not exist!', user:user}); }
     req.logIn(user, function(err) {
   		if (err) { return next(err); }
-      return res.json({message:'login success!', user:user});
+      res.json({message:'login success!', user:user});
     });
   })(req, res, next);
 });
@@ -91,8 +91,8 @@ app.post("/register", function(req, res){
 		if(err){
 			return res.status(500).json({message:"error", detail:err});
 		}
-		passport.authenticate("local")(req, res, function(){
-			res.json({message:"success", user:user});
+		req.logIn(user, (err) => {					//自動登入
+			res.json({message:"Successfully register, automatically login."});
 		});
 	});
 });
@@ -177,8 +177,7 @@ app.post("/forget", (req, res) => {
 			});
 		},//最後的錯誤處理
 		function(err){
-			if(err) console.log(err);
-			res.status(500).json({message:"error", detail:err});
+			res.json({message:"done", detail:err});
 		}
 	]);
 });
@@ -204,7 +203,7 @@ app.post("/reset/:token", (req, res) => {
 				});
 			});
 		}else{			//如果密碼兩個打得不一樣
-			return res.json({messageL:"password not equal."});
+			res.json({messageL:"password not equal."});
 		}
 	});
 });
@@ -212,17 +211,22 @@ app.post("/reset/:token", (req, res) => {
 //==================================一般功能(尚未連線)================================//
 //進入房間名單
 app.post("/enterRoom", (req, res)=>{
-	thisRoom = allRooms.get(req.body.roomNum);
-	thisRoom.Users.set(data.ID, {username: data.username, money: 0, isManager:false})				//設定進入使用者的資料
-	thisRoom.total = thisRoom.Users.size;
-	allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
-	
-	console.log(allRooms.get(data.roomNum));
+	if(allRooms.get(req.body.roomNum)){
+		thisRoom = allRooms.get(req.body.roomNum);
+		thisRoom.Users.set(req.body.ID, {username: req.body.username, money: 0, isManager:false})		//設定進入使用者的資料
+		thisRoom.total = thisRoom.Users.size;
+		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
+		
+		console.log(allRooms.get(req.body.roomNum));
+		res.json({roomDetail:allRooms.get(req.body.roomNum), allUsers:[...thisRoom.Users]});
+	}else{
+		res.status(500).json({message:"room doesn't exist."});
+	}
 });
 
 //開新房間
 app.post("/openRoom", (req, res)=>{
-	roomID = '9487'//Math.floor(Math.random()*66500).toString();
+	roomID = Math.floor(Math.random()*66500).toString();
 
 	var Users = new Map();				//新增該房間使用者名單
 	Users.set(req.body.ID, {username: req.body.username, isManager:true});					//設定進入開房者的資料
@@ -240,7 +244,7 @@ app.post("/openRoom", (req, res)=>{
 												Users:Users, 
 												total:1});
 		
-	console.log(roomID);
+	console.log(allRooms.get(roomID));
 	res.json({pinCode: roomID});
 });
 
