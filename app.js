@@ -12,7 +12,8 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-	server = require("http").Server(app);
+	server = require("http").Server(app),
+	https = require('https'),
 	io = require("socket.io")(server),
 	path = require("path");
 	middleware = require("./middleware"),
@@ -31,6 +32,12 @@ var allRooms = new Map();
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
+
+//https
+// var privateKey  = fs.readFileSync(__dirname + '/ssl/private.key');
+// var certificate = fs.readFileSync(__dirname + '/ssl/certificate.crt');
+// var credentials = { key: privateKey, cert: certificate};
+// var httpsServer = https.createServer(credentials ,app);
 
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
@@ -62,6 +69,11 @@ app.use(function (req, res, next) {
 app.get("/", function (req, res) {
 	res.render("index");
 });
+
+//text
+app.get("/text", function(req, res){
+	res.render("text.txt");
+})
 
 //註冊頁面
 app.get("/register", function (req, res) {
@@ -268,14 +280,6 @@ io.on('connection', (socket) => {
 		socket.emit('testResponse', {s:"success"});
 	});
 
-	// //關閉房間
-	// socket.on('closeRoom', (data)=>{
-	// 	//var roomUsers = io.sockets.adapter.rooms.get(data.roomNum);
-	// 	//io.sockets.adapter.rooms.delete(data.roomNum);
-	// 	console.log(io.sockets.adapter.rooms);
-	// 	socket.leave(data.roomNum);
-	// });
-
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
 	socket.on('startGame', (data) => {
@@ -339,9 +343,17 @@ io.on('connection', (socket) => {
 			}
 		});
 
-		allMoney.set('buyer', buyerData);
-		allMoney.set('seller', sellerData);
+		buyerData.sort((a, b) => b - a);
+		sellerData.sort((a, b) => a - b);
 
+		let p = 0
+		while (buyerData[p]-sellerData[p]>0){
+		p++
+		}
+
+		allMoney.set('point',p);
+		allMoney.set('buyer',buyerData);
+		allMoney.set('seller',sellerData);
 		console.log(allMoney)
 
 		io.emit('lineChartData', Array.from(allMoney));
@@ -424,7 +436,7 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-server.listen(process.env.PORT || 3000, process.env.IP, function () {
+server.listen(3000, process.env.IP, function () {
 	console.log("Server Start!");
 });
 
