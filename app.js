@@ -206,7 +206,7 @@ app.post("/forget", (req, res) => {
 				to: founduser.email,
 				from: "gankgank8787@gmail.com",
 				subject: "Reset Password From YelpCamp",
-				text: "click the link below to reset you password.\n http://" + req.headers.host + "/reset/" + token
+				text: "click the link below to reset you password.\n http://lbdgame.mgt.ncu.edu.tw:8000/forgetpassword2?token=" + token
 			}
 			transport.sendMail(content, (err) => {
 				console.log("email has been send to " + user.email + ", please check with further instruction.");
