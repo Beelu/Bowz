@@ -26,6 +26,25 @@ var express = require("express"),
 
 //房間所需要之暫存變數
 var allRooms = new Map();
+var testusers = new Map();
+testusers.set('321323', {username: '1234', money: 100,role:null});
+testusers.set('321423', {username: '1235', money: 100, role:null}); 
+testusers.set('321523', {username: '1236', money: 100, role:null});
+testusers.set('325123', {username: '1237', money: 100, role:null});
+testusers.set('32123', {username: '137', money: 100, role:null});
+allRooms.set("9487", {roomName: "9487",
+		roundNum: 1,
+		gameType: 1,
+		ratio: 0.7,
+		initMoney: 100,
+		saleMin: 10,
+		saleMax: 100,
+		buyMin: 20,
+		buyMax: 120,
+		item: "apple",
+		interval: 3,
+		Users: testusers,
+		total: 1})
 //var allUsers = new Map();
 
 //初始設置
