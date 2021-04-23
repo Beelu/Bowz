@@ -24,14 +24,25 @@ var express = require("express"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
 
+
+
+	// Users[學號:int]{
+	// 		username: 玩家名字，型態string
+	// 		money: 玩家錢，型態int
+	// 		role: 買賣身分，型態string
+	// 		price: 買賣價格，型態int
+	// 		item: 自創物品，型態string
+	// 		score: 總分數，型態int
+	// 	}
 //房間所需要之暫存變數
 var allRooms = new Map();
 var testusers = new Map();
-testusers.set('321323', {username: '1234', money: 100,role:null});
-testusers.set('321423', {username: '1235', money: 100, role:null}); 
-testusers.set('321523', {username: '1236', money: 100, role:null});
-testusers.set('325123', {username: '1237', money: 100, role:null});
-testusers.set('32123', {username: '137', money: 100, role:null});
+testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50});
+testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60});
+testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20}); 
+testusers.set('456', {username: '456', money: 450, role:"seller", price:100, item:null, score:30});
+testusers.set('567', {username: '567', money: 760, role:"seller", price:90,  item:null, score:40});
+testusers.set('678', {username: '678', money: 350, role:"seller", price:90,  item:null, score:90});
 allRooms.set("9487", {roomName: "9487",
 		roundNum: 1,
 		gameType: 1,
@@ -478,8 +489,9 @@ server.listen(3000, process.env.IP, function () {
 玩家暫存參數(Map):
 		Users[學號:int]{
 			username: 玩家名字，型態string
-			role: 買賣身分，型態int
+			role: 買賣身分，型態string
 			money: 玩家錢，型態int
+			price: 買賣價格，型態int
 			item: 自創物品，型態string
 			score: 總分數，型態int
 		}
