@@ -236,23 +236,19 @@ app.post("/reset/:token", (req, res) => {
 		if (err) {					//搜尋資料庫發生錯誤
 			return res.status(500).json({ message: "error", detail: err });
 		}
-		if (req.body.password === req.body.confirm) {
-			founduser.setPassword(req.body.password, (err) => {
-				if (err) {			//重新設定密碼時發生錯誤
-					return res.status(500).json({ message: "error", detail: err });
-				}
-				founduser.resetPWtoken = undefined;
-				founduser.resetPWexpires = undefined;
+		founduser.setPassword(req.body.password, (err) => {
+			if (err) {			//重新設定密碼時發生錯誤
+				return res.status(500).json({ message: "error", detail: err });
+			}
+			founduser.resetPWtoken = undefined;
+			founduser.resetPWexpires = undefined;
 
-				founduser.save((err) => {				//儲存重設密碼回資料庫
-					req.logIn(founduser, (err) => {					//儲存完後自動登入
-						res.json({ message: "Successfully reset password, automatically login." });
-					});
+			founduser.save((err) => {				//儲存重設密碼回資料庫
+				req.logIn(founduser, (err) => {					//儲存完後自動登入
+					res.json({ message: "Successfully reset password, automatically login." });
 				});
 			});
-		} else {			//如果密碼兩個打得不一樣
-			res.json({ messageL: "password not equal." });
-		}
+		});
 	});
 });
 
