@@ -399,18 +399,18 @@ io.on('connection', (socket) => {
 
 
 	/*掃到 QR code
-	 *回傳收錢者的 目前金額
-	 */
-	app.post("/scanQRcode", function (req, res) {
+  *回傳收錢者的 目前金額
+  */
+  app.post("/scanQRcode", function (req, res) {
+    
 
+    var req_payer = req.body.user_id;//獲取收款人id
+    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
+    var theseUsers = thisRoom.allUsers;//獲取房間所有user
+    var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
 
-		var req_payer = req.body.transaction['payer'];//獲取收款人id
-		var thisRoom = allRooms.get('newroom');//獲取房間id    ////假資料!!!!!!!
-		var theseUsers = thisRoom.allUsers;//獲取房間所有user
-		var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
-
-		res.json(reciver_info.money);
-	});
+    res.json(reciver_info.money);
+  });
 
 	  //公告訊息////////
   socket.on('sendsysmsg', function(msg, Roomnum){ 
@@ -469,16 +469,18 @@ server.listen(3000, process.env.IP, function () {
 /*
 房間暫存參數(Map):
 		allRooms[房間ID:int]{
-			gameType: 遊戲類型，型態int
-			ratio: 買賣方比例，型態float
-			initMoney: 初始金額，型態int
-			saleMin: 賣價下限，型態int
-			saleMax: 賣價上限，型態int
-			buyMin: 買價下限，型態int
-			buyMax: 買價上限，型態int
-			roundTime: 回合時間，型態Date
-			interval: 價格區間，型態int
-			item: 自創物品，例如排放權之類的，型態string
+			round[]:{
+				gameType: 遊戲類型，型態int
+				ratio: 買賣方比例，型態float
+				initMoney: 初始金額，型態int
+				saleMin: 賣價下限，型態int
+				saleMax: 賣價上限，型態int
+				buyMin: 買價下限，型態int
+				buyMax: 買價上限，型態int
+				roundTime: 回合時間，型態Date
+				interval: 價格區間，型態int
+				item: 自創物品，例如排放權之類的，型態string
+			}
 			Users: 所有使用者，型態map
 		}
 
