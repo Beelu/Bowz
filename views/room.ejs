@@ -14,16 +14,12 @@
   <% }) %>
 <% } %>
 
-<button id="closeRoom" class="form-control btn btn-primary">關閉房間</button>
+<button id="startRoom" class="form-control btn btn-primary">開啟房間</button>
 
 <script>
   const socket = io();
-  // socket.on('connect', function () {
-  //   socket.emit('enterRoom', { roomNum: '$("#roomID").val()', username: $("#username").val(), ID: $("#ID").val() });
-  // });
-  //關閉房間
-  $('#closeRoom').click(function () {
-    socket.emit('closeRoom', {roomNum: "9487"});
+  socket.on('connect', function () {
+    socket.emit('enterRoom', { roomNum: '$("#roomID").val()', username: $("#username").val(), ID: $("#ID").val() });
   });
 
 </script>

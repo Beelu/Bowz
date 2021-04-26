@@ -100,11 +100,6 @@ app.get("/", function (req, res) {
 	res.render("index");
 });
 
-//text
-app.get("/text", function(req, res){
-	res.render("text.txt");
-})
-
 //註冊頁面
 app.get("/register", function (req, res) {
 	res.render("register");
@@ -294,6 +289,52 @@ app.post("/openRoom", (req, res) => {
 	res.json({ pinCode: roomID });
 });
 
+//startGame
+app.post("/assignRole", (req, res) => {
+  
+  let thisRoom = allRooms.get(req.body.roomNum);
+  let total = thisRoom.total;
+  let saleMax = thisRoom.saleMax;
+  let buyMax = thisRoom.buyMax;
+  let saleMin = thisRoom.saleMin;
+  let buyMin = thisRoom.buyMin;
+  let interval = thisRoom.interval;
+  let ratio;
+  let i=1;
+
+  if(thisRoom.ratio == null){
+   do{
+    ratio = randomNormal({mean: 0.5})
+   }while( ratio < 0.3 || ratio > 0.7)
+  }else{
+   ratio = thisRoom.ratio;
+  }
+
+  let sellerNum = Math.round(ratio * total)
+  thisRoom.Users.forEach(function(value,key) {
+   if(i<=sellerNum){
+    money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+    money = interval * Math.ceil(money/interval)
+    value.role = 'seller' 
+    value.money = money 
+   }
+   else {
+    money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+    money = interval * Math.ceil(money/interval)
+    value.role = 'buyer' 
+    value.money = money
+   }
+   i++
+   thisRoom.Users.set(key,value)
+    });
+ 
+  allRooms.set(req.body.roomNum, thisRoom); 
+
+
+  userData = thisRoom.Users
+  console.log(userData);
+  res.json({ data: Array.from(userData)});
+});
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
 	//進入房間
@@ -308,51 +349,51 @@ io.on('connection', (socket) => {
 
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
-	socket.on('startGame', (data) => {
+	// socket.on('startGame', (data) => {
 
-		let thisRoom = allRooms.get(data.roomNum);
-		let total = thisRoom.total;
-		let saleMax = thisRoom.saleMax;
-		let buyMax = thisRoom.buyMax;
-		let saleMin = thisRoom.saleMin;
-		let buyMin = thisRoom.buyMin;
-		let interval = thisRoom.interval;
-		let ratio;
-		let i = 1;
+	// 	let thisRoom = allRooms.get(data.roomNum);
+	// 	let total = thisRoom.total;
+	// 	let saleMax = thisRoom.saleMax;
+	// 	let buyMax = thisRoom.buyMax;
+	// 	let saleMin = thisRoom.saleMin;
+	// 	let buyMin = thisRoom.buyMin;
+	// 	let interval = thisRoom.interval;
+	// 	let ratio;
+	// 	let i = 1;
 
-		if (thisRoom.ratio == null) {
-			do {
-				ratio = randomNormal({ mean: 0.5 })
-			} while (ratio < 0.3 || ratio > 0.7)
-		} else {
-			ratio = thisRoom.ratio;
-		}
+	// 	if (thisRoom.ratio == null) {
+	// 		do {
+	// 			ratio = randomNormal({ mean: 0.5 })
+	// 		} while (ratio < 0.3 || ratio > 0.7)
+	// 	} else {
+	// 		ratio = thisRoom.ratio;
+	// 	}
 
-		let sellerNum = ratio * total;
+	// 	let sellerNum = ratio * total;
 
-		thisRoom.Users.forEach(function (value, key) {
-			if (i <= sellerNum) {
-				money = Math.floor(Math.random() * (saleMax - saleMin)) + saleMin
-				money = interval * Math.ceil(money / interval)
-				value.role = 'seller'
-				value.money = money
-			}
-			else {
-				money = Math.floor(Math.random() * (buyMax - buyMin)) + buyMin
-				money = interval * Math.ceil(money / interval)
-				value.role = 'buyer'
-				value.money = money
-			}
-			thisRoom.Users.set(key, value)
-			i++;
-		});
+	// 	thisRoom.Users.forEach(function (value, key) {
+	// 		if (i <= sellerNum) {
+	// 			money = Math.floor(Math.random() * (saleMax - saleMin)) + saleMin
+	// 			money = interval * Math.ceil(money / interval)
+	// 			value.role = 'seller'
+	// 			value.money = money
+	// 		}
+	// 		else {
+	// 			money = Math.floor(Math.random() * (buyMax - buyMin)) + buyMin
+	// 			money = interval * Math.ceil(money / interval)
+	// 			value.role = 'buyer'
+	// 			value.money = money
+	// 		}
+	// 		thisRoom.Users.set(key, value)
+	// 		i++;
+	// 	});
 
-		allRooms.set(data.roomNum, thisRoom);
-		console.log(allRooms)
+	// 	allRooms.set(data.roomNum, thisRoom);
+	// 	console.log(allRooms.get('9487'))
 
-		userData = thisRoom.Users
-		io.emit('startGameData', Array.from(userData));
-	});
+	// 	userData = thisRoom.Users
+	// 	io.emit('startGameData', Array.from(userData));
+	// });
 
 
 	socket.on('lineChart', (data) => {
