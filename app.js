@@ -448,13 +448,12 @@ io.on('connection', (socket) => {
   app.post("/scanQRcode", function (req, res) {
     
 
-    // var req_payer = req.body.user_id;//獲取收款人id
-    // var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
-    // var theseUsers = thisRoom.allUsers;//獲取房間所有user
-    // var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
+    var req_payer = req.body.user_id;//獲取收款人id
+    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
+    var theseUsers = thisRoom.Users;//獲取房間所有user
+    var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
 
-    // res.json(reciver_info.money);
-		res.json({message:"hello world"});
+    res.json(reciver_info.money);
   });
 
 	  //公告訊息////////
