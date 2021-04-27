@@ -14,12 +14,12 @@
   <% }) %>
 <% } %>
 
-<button id="startRoom" class="form-control btn btn-primary">開啟房間</button>
+<button id="closeRoom" class="form-control btn btn-primary">關閉房間</button>
 
 <script>
-  const socket = io();
+  const socket = io.connect('http://localhost');
   socket.on('connect', function () {
-    socket.emit('enterRoom', { roomNum: '$("#roomID").val()', username: $("#username").val(), ID: $("#ID").val() });
+    socket.emit('enterRoom', { roomNum: '9487', username: $("#username").val(), ID: $("#ID").val() });
   });
 
 </script>

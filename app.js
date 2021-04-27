@@ -56,7 +56,6 @@ allRooms.set("9487", {roomName: "9487",
 		interval: 3,
 		Users: testusers,
 		total: 1})
-//var allUsers = new Map();
 
 //初始設置
 app.set("view engine", "ejs");
@@ -270,19 +269,22 @@ app.post("/openRoom", (req, res) => {
 	var Users = new Map();				//新增該房間使用者名單
 	Users.set(req.body.ID, { username: req.body.username, isManager: true });					//設定進入開房者的資料
 	allRooms.set(roomID, {
-		roomName: req.body.roomName,
-		roundNum: req.body.roundNum,
-		gameType: req.body.gameType,
-		ratio: req.body.ratio,
-		initMoney: req.body.initMoney,
-		saleMin: req.body.saleMin,
-		saleMax: req.body.saleMax,
-		buyMin: req.body.buyMin,
-		buyMax: req.body.buyMax,
-		item: req.body.item,
-		interval: req.body.interval,
-		Users: Users,
-		total: 1
+		round:[{
+			roomName: req.body.roomName,
+			roundNum: req.body.roundNum,
+			gameType: req.body.gameType,
+			ratio: req.body.ratio,
+			initMoney: req.body.initMoney,
+			saleMin: req.body.saleMin,
+			saleMax: req.body.saleMax,
+			buyMin: req.body.buyMin,
+			buyMax: req.body.buyMax,
+			item: req.body.item,
+			interval: req.body.interval,
+			total: 1,
+			records:[]
+		}],
+		Users:Users
 	});
 
 	console.log(allRooms.get(roomID));
@@ -340,6 +342,7 @@ io.on('connection', (socket) => {
 	//進入房間
 	socket.on('enterRoom', (data) => {
 		socket.join(data.roomNum);
+//		console.log(io.sockets.adapter.rooms);
 	});
 
 	//test
@@ -445,12 +448,13 @@ io.on('connection', (socket) => {
   app.post("/scanQRcode", function (req, res) {
     
 
-    var req_payer = req.body.user_id;//獲取收款人id
-    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
-    var theseUsers = thisRoom.allUsers;//獲取房間所有user
-    var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
+    // var req_payer = req.body.user_id;//獲取收款人id
+    // var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
+    // var theseUsers = thisRoom.allUsers;//獲取房間所有user
+    // var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
 
-    res.json(reciver_info.money);
+    // res.json(reciver_info.money);
+		res.json({message:"hello world"});
   });
 
 	  //公告訊息////////
@@ -511,18 +515,25 @@ server.listen(3000, process.env.IP, function () {
 房間暫存參數(Map):
 		allRooms[房間ID:int]{
 			round[]:{
-				gameType: 遊戲類型，型態int
-				ratio: 買賣方比例，型態float
-				initMoney: 初始金額，型態int
-				saleMin: 賣價下限，型態int
-				saleMax: 賣價上限，型態int
-				buyMin: 買價下限，型態int
-				buyMax: 買價上限，型態int
-				roundTime: 回合時間，型態Date
-				interval: 價格區間，型態int
-				item: 自創物品，例如排放權之類的，型態string
+					gameType: 遊戲類型，型態int
+					ratio: 買賣方比例，型態float
+					initMoney: 初始金額，型態int
+					saleMin: 賣價下限，型態int
+					saleMax: 賣價上限，型態int
+					buyMin: 買價下限，型態int
+					buyMax: 買價上限，型態int
+					roundTime: 回合時間，型態Date
+					interval: 價格區間，型態int
+					item: 自創物品，例如排放權之類的，型態string
+					records[]:所有交易紀錄，型態record
 			}
 			Users: 所有使用者，型態map
+		}
+
+		record{
+			seller:賣家id，型態int
+			buyer:買家id，型態int
+			price:金額。型態int
 		}
 
 玩家暫存參數(Map):
