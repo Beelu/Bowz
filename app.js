@@ -450,9 +450,9 @@ io.on('connection', (socket) => {
   });
 
 	  //公告訊息////////
-  socket.on('sendsysmsg', function(msg, Roomnum){ 
+  socket.on('sendsysmsg', function(msg, roomNum){ 
 
-    socketIO.to(roomID).emit('sys',msg);
+    socketIO.to(roomNum).emit('sys',msg);
 
   });
 
