@@ -533,7 +533,7 @@ io.on('connection', (socket) => {
         if(chek_point==='1'){
           allUsers.get(receiver_id).money += input_money;
 		  allUsers.get(payer_id).money -= input_money;
-          thisRoom.round[thisRound].records.push({seller: receiver_id, buyer: payer_id, price: money});
+          thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
           console.log(thisRoom.round);
         }
 
@@ -552,7 +552,7 @@ io.on('connection', (socket) => {
 		var thisRound = thisRoom.round[round];
 
 		//傳送交易紀錄
-		socket.emit('getRecordRequest', thisRound.records);
+		socket.emit('getRecordRequest', thisRound.record);
 	});
 	//============高鵬雲的部分結束=============//
 });
