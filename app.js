@@ -29,6 +29,7 @@ var express = require("express"),
 //房間所需要之暫存變數
 var allRooms = new Map();
 var testusers = new Map();
+var records = [];
 testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50});
 testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60});
 testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20}); 
@@ -63,6 +64,7 @@ allRooms.set("9487",{
 	Users:testusers,
 	round:0
 })
+
 
 //初始設置
 app.set("view engine", "ejs");
@@ -306,7 +308,7 @@ app.post("/openRoom", (req, res) => {
 	res.json({ pinCode: roomID });
 });
 
-//startGame
+//=====startGame=====
 app.post("/assignRole", (req, res) => {
   
   let thisRoom = allRooms.get(req.body.roomNum);
@@ -348,7 +350,7 @@ app.post("/assignRole", (req, res) => {
   allRooms.set(req.body.roomNum, thisRoom); 
 
 
-  userData = thisRoom.Users
+  var userData = thisRoom.Users
   console.log(userData);
   res.json({ data: Array.from(userData)});
 });
@@ -481,15 +483,6 @@ io.on('connection', (socket) => {
 	//===============林育緹部分結束==================//
 
 	//===============高鵬雲部分====================//
-	// 接收用户消息,發送公告至房間
-	socket.on('message', function (msg) {
-		// 验证如果用户不在房间内则不给发送
-		if (roomInfo[roomID].indexOf(user) === -1) {
-			return false;
-		}
-		socketIO.to(roomID).emit('msg', user, msg);
-	});
-
 
 	/*掃到 QR code
   *回傳收錢者的 目前金額
@@ -506,9 +499,9 @@ io.on('connection', (socket) => {
   });
 
 	  //公告訊息////////
-  socket.on('sendsysmsg', function(msg, Roomnum){ 
+  socket.on('sendsysmsg', function(msg, roomNum){ 
 
-    socketIO.to(roomID).emit('sys',msg)
+    socketIO.to(roomNum).emit('sys',msg);
 
   });
 
@@ -518,12 +511,15 @@ io.on('connection', (socket) => {
   */
   app.post("/checkQRcode", function (req, res, next) {
 
-    
-    const payer_id = req.body.transaction['payer']//獲取付款者ID
-    const receiver_id = req.body.transaction['receiver']//獲取付款者ID
-    const money = req.body.transaction['money']//獲取付款者ID
+	var thisRoom = allRooms.get(req.body.transaction['roomNum']);//獲取房間id
+	var allUsers = thisRoom.Users;
 
-    console.log("收到確認要求"+payer_id)
+	var thisRound = req.body.transaction['round'];
+    var payer_id = req.body.transaction['payer'];//獲取付款者ID
+    var receiver_id = req.body.transaction['receiver'];//獲取付款者ID
+    var money = req.body.transaction['money'];//獲取付款者ID
+
+    console.log("收到確認要求"+payer_id);
 
     //廣播搜尋
     socketIO.to(req.body.transaction[roomNum]).emit('search_user', payer_id);
@@ -535,22 +531,28 @@ io.on('connection', (socket) => {
         
         //交易成功寫入交易紀錄表
         if(chek_point==='1'){
-          allUsers.get(receiver_id).money += input_money
-          records.set(records.size+1, {seller: receiver_id, buyer: payer_id, price: money})
-          console.log(records)
+          allUsers.get(receiver_id).money += input_money;
+		  allUsers.get(payer_id).money -= input_money;
+          thisRoom.round[thisRound].records.push({seller: receiver_id, buyer: payer_id, price: money});
+          console.log(thisRoom.round);
         }
 
          //回傳res
          res.send(chek_point);
-
     })
 
   });
 
+
+
 	//交易紀錄要求
-	socket.on('sendRecordRequest', function () {
+	socket.on('sendRecordRequest', function (roomNum, round) {
+		
+		var thisRoom = allRooms.get(roomNum);//獲取房間id
+		var thisRound = thisRoom.round[round];
+
 		//傳送交易紀錄
-		socket.emit('getRecordRequest', Array.from(records))
+		socket.emit('getRecordRequest', thisRound.records);
 	});
 	//============高鵬雲的部分結束=============//
 });
