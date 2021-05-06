@@ -5,7 +5,7 @@ var transactionSchema = new mongoose.Schema({
 		id:{type: mongoose.Schema.Types.ObjectId, ref: "record"},
 		roomNum: String
 	},
-  roundNum: Number,
+  roundNum: String,
   seller: String,
   buyer: String,
   price: Number

@@ -18,22 +18,14 @@ var express = require("express"),
 	path = require("path");
 	middleware = require("./middleware"),
 	user = require("./models/user"),
+	transaction = require('./models/transaction'),
+	record = require('./models/record'),
 	async = require("async"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
 
-
-
-	// Users[學號:int]{
-	// 		username: 玩家名字，型態string
-	// 		money: 玩家錢，型態int
-	// 		role: 買賣身分，型態string
-	// 		price: 買賣價格，型態int
-	// 		item: 自創物品，型態string
-	// 		score: 總分數，型態int
-	// 	}
 //房間所需要之暫存變數
 var allRooms = new Map();
 var testusers = new Map();
@@ -43,19 +35,34 @@ testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, ite
 testusers.set('456', {username: '456', money: 450, role:"seller", price:100, item:null, score:30});
 testusers.set('567', {username: '567', money: 760, role:"seller", price:90,  item:null, score:40});
 testusers.set('678', {username: '678', money: 350, role:"seller", price:90,  item:null, score:90});
-allRooms.set("9487", {roomName: "9487",
-		roundNum: 1,
-		gameType: 1,
+allRooms.set("9487",{
+	round:[{
 		ratio: 0.7,
 		initMoney: 100,
 		saleMin: 10,
 		saleMax: 100,
 		buyMin: 20,
 		buyMax: 120,
+		interval: 10,
 		item: "apple",
-		interval: 3,
-		Users: testusers,
-		total: 1})
+		record:[]},
+	{
+		ratio: 0.7,
+		initMoney: 100,
+		saleMin: 10,
+		saleMax: 100,
+		buyMin: 20,
+		buyMax: 120,
+		interval: 10,
+		item: "yanshou",
+		record:[]}
+	],
+	gameType: 1,
+	roundTime:120,
+	roomName:"保志的測試",
+	Users:testusers,
+	round:0
+})
 
 //初始設置
 app.set("view engine", "ejs");
@@ -264,29 +271,37 @@ app.post("/enterRoom", (req, res) => {
 
 //開新房間
 app.post("/openRoom", (req, res) => {
-	roomID = Math.floor(Math.random() * 66500).toString();
+	roomID = Math.floor(Math.random() * 99999).toString();
 
 	var Users = new Map();				//新增該房間使用者名單
 	Users.set(req.body.ID, { username: req.body.username, isManager: true });					//設定進入開房者的資料
+	// allRooms.set(roomID, {
+	// 	round:[{
+	// 		ratio: req.body.ratio,
+	// 		initMoney: req.body.initMoney,
+	// 		saleMin: req.body.saleMin,
+	// 		saleMax: req.body.saleMax,
+	// 		buyMin: req.body.buyMin,
+	// 		buyMax: req.body.buyMax,
+	// 		interval: req.body.interval,
+	// 		item: req.body.item,
+	// 		records:[]
+	// 	}],
+	//	gameType:req.bode.gameType
+	// 	roomName: req.body.roomName,
+	// 	roundTime:req.body.roundTime,
+	// 	Users:Users,
+	// 	round:0
+	// });
 	allRooms.set(roomID, {
-		round:[{
-			roomName: req.body.roomName,
-			roundNum: req.body.roundNum,
-			gameType: req.body.gameType,
-			ratio: req.body.ratio,
-			initMoney: req.body.initMoney,
-			saleMin: req.body.saleMin,
-			saleMax: req.body.saleMax,
-			buyMin: req.body.buyMin,
-			buyMax: req.body.buyMax,
-			item: req.body.item,
-			interval: req.body.interval,
-			total: 1,
-			records:[]
-		}],
-		Users:Users
+		round:req.body.roundInfo,
+		gameType:req.bode.gameType,
+		roundTime:req.body.roundTime,
+		roomName: req.body.roomName,
+		Users:Users,
+		round:0
 	});
-
+	
 	console.log(allRooms.get(roomID));
 	res.json({ pinCode: roomID });
 });
@@ -337,6 +352,40 @@ app.post("/assignRole", (req, res) => {
   console.log(userData);
   res.json({ data: Array.from(userData)});
 });
+
+//===========遊戲後儲存歷史資料=================//
+app.post('/saveRecord', (req, res)=>{
+	var saveRoom = allRooms.get(req.body.roomNum);
+	var saveRecord = {
+		roomNum:req.body.roomNum,
+		date:Date.now()
+	}
+	record.create(saveRecord, function(err, newRecord) {
+		//儲存每個round的每筆資料
+		for(var i=0; i<saveRoom.round.length; i++){
+			for(var j=0; j<saveRoom.round[i]; j++){
+				var transaction = saveRoom.round[i].records[j];
+				transaction.create(Transaction, function(err, newTrans){
+					if(err){
+						console.log(err);
+					}else{
+						newTrans.record.id = newRecord._id;
+						newTrans.record.roomNum = req.body.roomNum;
+						newTrans.roomNum = req.body.roomNum;
+						newTrans.save();
+						newRecord.transactions.push(newTrans);
+						newRecord.save();
+					}
+				});
+			}
+		}
+		if (err) {
+			res.status(500).json({message:err});
+		}
+		res.json({message:"room is closed, successfully record room information."})
+	});
+});
+
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
 	//進入房間
@@ -477,7 +526,7 @@ io.on('connection', (socket) => {
     console.log("收到確認要求"+payer_id)
 
     //廣播搜尋
-    socketIO.emit('search_user', payer_id);
+    socketIO.to(req.body.transaction[roomNum]).emit('search_user', payer_id);
 
     //聽取回應
     socket.on('get_chek_point', function(chek_point){
@@ -514,19 +563,21 @@ server.listen(3000, process.env.IP, function () {
 房間暫存參數(Map):
 		allRooms[房間ID:int]{
 			round[]:{
-					gameType: 遊戲類型，型態int
 					ratio: 買賣方比例，型態float
 					initMoney: 初始金額，型態int
 					saleMin: 賣價下限，型態int
 					saleMax: 賣價上限，型態int
 					buyMin: 買價下限，型態int
 					buyMax: 買價上限，型態int
-					roundTime: 回合時間，型態Date
 					interval: 價格區間，型態int
 					item: 自創物品，例如排放權之類的，型態string
 					records[]:所有交易紀錄，型態record
 			}
+			gameType: 遊戲類型，型態int
+			roundTime: 回合時間，型態int
+			roomName:房間名稱，型態string
 			Users: 所有使用者，型態map
+			round: 現在第幾回合，型態int
 		}
 
 		record{
