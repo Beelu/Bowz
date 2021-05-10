@@ -46,7 +46,7 @@ allRooms.set("9487",{
 		buyMax: 120,
 		interval: 10,
 		item: "apple",
-		record:[]},
+		record:[{seller:"asdasd", buyer:"qweqwe", price:120}, {seller:"zxczxc", buyer:"fghfgh", price:130}]},
 	{
 		ratio: 0.7,
 		initMoney: 100,
@@ -56,15 +56,14 @@ allRooms.set("9487",{
 		buyMax: 120,
 		interval: 10,
 		item: "yanshou",
-		record:[]}
+		record:[{seller:"qscq", buyer:"zsees", price:100}, {seller:"zxcc", buyer:"hfgh", price:200}]}
 	],
 	gameType: 1,
 	roundTime:120,
 	roomName:"保志的測試",
 	Users:testusers,
-	round:0
+	nowRound:0
 })
-
 
 //初始設置
 app.set("view engine", "ejs");
@@ -362,25 +361,35 @@ app.post('/saveRecord', (req, res)=>{
 		roomNum:req.body.roomNum,
 		date:Date.now()
 	}
-	record.create(saveRecord, function(err, newRecord) {
+	record.create(saveRecord, async function(err, newRecord) {
+		let tempTotalTrans = [];
 		//儲存每個round的每筆資料
-		for(var i=0; i<saveRoom.round.length; i++){
-			for(var j=0; j<saveRoom.round[i]; j++){
-				var transaction = saveRoom.round[i].records[j];
-				transaction.create(Transaction, function(err, newTrans){
-					if(err){
-						console.log(err);
-					}else{
-						newTrans.record.id = newRecord._id;
-						newTrans.record.roomNum = req.body.roomNum;
-						newTrans.roomNum = req.body.roomNum;
-						newTrans.save();
-						newRecord.transactions.push(newTrans);
-						newRecord.save();
-					}
-				});
+		async function recording() {
+			for (let i=0; i<saveRoom.round.length; i++){
+				for(let j=0; j<saveRoom.round[i].record.length; j++){
+					var t = saveRoom.round[i].record[j];
+					var tempRecord = {"id": newRecord._id, "roomNum": req.body.roomNum};
+					t["roundNum"] = i;
+					t["record"] = tempRecord;
+
+					transaction.create(t, function(err, newTrans){
+						if(err){
+							console.log(err);
+						}else{
+							tempTotalTrans.push(newTrans);
+							console.log(tempTotalTrans);
+						}
+					});
+				}
 			}
+			await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
 		}
+		await recording();
+		//存進所有歷史紀錄
+		console.log(tempTotalTrans);
+		newRecord.transactions = tempTotalTrans;
+		newRecord.save();
+
 		if (err) {
 			res.status(500).json({message:err});
 		}
@@ -579,7 +588,7 @@ server.listen(3000, process.env.IP, function () {
 			roundTime: 回合時間，型態int
 			roomName:房間名稱，型態string
 			Users: 所有使用者，型態map
-			round: 現在第幾回合，型態int
+			nowRound: 現在第幾回合，型態int
 		}
 
 		record{

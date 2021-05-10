@@ -17,7 +17,7 @@
 <button id="closeRoom" class="form-control btn btn-primary">關閉房間</button>
 
 <script>
-  const socket = io.connect('http://localhost');
+  const socket = io.connect('http://localhost:3000/');
   socket.on('connect', function () {
     socket.emit('enterRoom', { roomNum: '9487', username: $("#username").val(), ID: $("#ID").val() });
   });
