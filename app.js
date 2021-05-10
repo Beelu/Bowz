@@ -354,7 +354,7 @@ app.post("/assignRole", (req, res) => {
   res.json({ data: Array.from(userData)});
 });
 
-//===========遊戲後儲存歷史資料=================//
+//===========遊戲後儲存歷史資料===============
 app.post('/saveRecord', (req, res)=>{
 	var saveRoom = allRooms.get(req.body.roomNum);
 	var saveRecord = {
