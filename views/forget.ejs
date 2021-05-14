@@ -1,0 +1,13 @@
+<%- include("./partials/header") %>
+
+  <div class="container mt-5">
+    <h1>Forgot/Reset Password</h1>
+
+    <form action="/forget" method="POST">
+      <input class="form-control form-group" type="email" name="email" placeholder="enter email" autofocus>
+      <button class="form-control btn btn-primary">Send Mail</button>
+      <a href="/">Go Back</a>
+    </form>
+  </div>
+
+  <%- include("./partials/footer") %>

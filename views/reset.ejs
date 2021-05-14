@@ -1,0 +1,13 @@
+<%- include("./partials/header") %>
+
+  <div class="container mt-5" style="width:30%">
+    <h1>Reset Password</h1>
+
+    <form action="/reset/<%= token %>" method="POST">
+      <input class="form-control form-group" type="password" name="password" placeholder="new password" autofocus>
+      <button class="form-control btn btn-primary">Reset Password</button>
+      <a href="/">Go Back</a>
+    </form>
+  </div>
+
+  <%- include("./partials/footer") %>
