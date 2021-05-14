@@ -390,6 +390,8 @@ app.post('/saveRecord', (req, res)=>{
 		newRecord.transactions = tempTotalTrans;
 		newRecord.save();
 
+		//刪除該房間
+		allRooms.delete(req.body.roomNum);
 		if (err) {
 			res.status(500).json({message:err});
 		}
