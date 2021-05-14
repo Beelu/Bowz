@@ -1,0 +1,14 @@
+# dependencies
+/node_modules
+.git
+
+# testing
+/coverage
+
+# production
+/build
+
+Dockerfile
+Dockerfile.prod
+debug.log
+.eslintcache

@@ -64,7 +64,7 @@ allRooms.set("9487",{
 	roundTime:120,
 	roomName:"保志的測試",
 	Users:testusers,
-	nowRound:0
+	nowRound:-1
 })
 
 //初始設置
