@@ -30,6 +30,8 @@ var express = require("express"),
 var allRooms = new Map();
 var testusers = new Map();
 var records = [];
+var lineChartData = new Map();
+var allMoneyData =[];
 testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50});
 testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60});
 testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20}); 
@@ -309,50 +311,120 @@ app.post("/openRoom", (req, res) => {
 
 //=====startGame=====
 app.post("/assignRole", (req, res) => {
-  
-  let thisRoom = allRooms.get(req.body.roomNum);
-  let total = thisRoom.total;
-  let saleMax = thisRoom.saleMax;
-  let buyMax = thisRoom.buyMax;
-  let saleMin = thisRoom.saleMin;
-  let buyMin = thisRoom.buyMin;
-  let interval = thisRoom.interval;
-  let ratio;
-  let i=1;
+	
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let roundNum = req.body.roundNum;
+	console.log(req.body);
+	let total = thisRoom.Users.size; ;
+	let saleMax = thisRoom.round[roundNum].saleMax;
+	let buyMax = thisRoom.round[roundNum].buyMax;
+	let saleMin = thisRoom.round[roundNum].saleMin;
+	let buyMin = thisRoom.round[roundNum].buyMin;
+	let interval = thisRoom.round[roundNum].interval;
+	let ratio;
+	let scount = 0;
+	let bcount = 0;
+	let tcount = 0;
+	let rantmp = 0;
 
-  if(thisRoom.ratio == null){
-   do{
-    ratio = randomNormal({mean: 0.5})
-   }while( ratio < 0.3 || ratio > 0.7)
-  }else{
-   ratio = thisRoom.ratio;
-  }
+	if(thisRoom.round[roundNum].ratio == null){
+		do{
+			ratio = randomNormal({mean: 0.5})
+		}while( ratio < 0.3 || ratio > 0.7)
+	}else{
+		ratio = thisRoom.round[roundNum].ratio;
+	}
 
-  let sellerNum = Math.round(ratio * total)
-  thisRoom.Users.forEach(function(value,key) {
-   if(i<=sellerNum){
-    money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-    money = interval * Math.ceil(money/interval)
-    value.role = 'seller' 
-    value.money = money 
-   }
-   else {
-    money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-    money = interval * Math.ceil(money/interval)
-    value.role = 'buyer' 
-    value.money = money
-   }
-   i++
-   thisRoom.Users.set(key,value)
-    });
- 
-  allRooms.set(req.body.roomNum, thisRoom); 
+	let sellerNum = Math.round(ratio * total)
 
+	thisRoom.Users.forEach(function(value,key) {
+		if(tcount%2==0){
+			rantmp = Math.floor(Math.random() * 2)
+			console.log("case1")
+		}
+	
+		if(sellerNum>total/2){
+			if(scount >= sellerNum/2 && sellerNum>scount){
+				rantmp=0;
+				console.log("case2 : "+scount)
+			}
+		}else if(sellerNum<total/2){
+			if( bcount <= (total-sellerNum)/2 && total-sellerNum>bcount){
+				rantmp=1;
+				console.log("case3 : "+bcount)
+			}
+		}else{}
 
-  var userData = thisRoom.Users
-  console.log(userData);
-  res.json({ data: Array.from(userData)});
+		switch(rantmp){
+			case 0:
+				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'seller' 
+				value.money = money 
+				rantmp=1
+				scount++;
+				console.log("scount+1")
+				break;
+			case 1:
+				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'buyer' 
+				value.money = money
+				rantmp=0
+				bcount++
+				console.log("bcount+1")
+				break;
+		}
+
+		tcount++;
+		thisRoom.Users.set(key,value)
+		});
+	console.log("scount"+scount)
+	console.log("bcount"+bcount)
+	console.log("sellerNum"+sellerNum)
+	allRooms.set(req.body.roomNum, thisRoom);	
+	userData = thisRoom.Users
+	res.json({ data: Array.from(userData)});
+
 });
+
+app.post("/lineChartData", (req,res) => {
+	let data = lineChartData.get(req.body.roomNum);
+	res.json({ data: Array.from(data)});
+
+})
+
+app.post("/startGameTime",(req,res)=>{
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let buyerMoneyData = [];
+	let sellerMoneyData = [];
+	let dt = new Date();
+
+	thisRoom.nowRound ++;
+
+	thisRoom.Users.forEach(function(value, key) {
+		if(value.role=="buyer"){
+			buyerMoneyData.push(value.money);
+		}else{
+			sellerMoneyData.push(value.money);
+		}
+		});
+		
+		buyerMoneyData.sort((a, b) => b - a);
+		sellerMoneyData.sort((a, b) => a - b);
+		
+		let p = 0
+		while (buyerMoneyData[p]-sellerMoneyData[p]>0){
+			p++
+		}
+		
+	allMoneyData.push({buyer:buyerMoneyData,seller:sellerMoneyData,point:p});
+	lineChartData.set(req.body.roomNum,allMoneyData);
+	console.log("allMoneyData"+allMoneyData)
+	console.log("lineChartData"+lineChartData)
+
+	res.json({data:dt});
+})
 
 //===========遊戲後儲存歷史資料===============
 app.post('/saveRecord', (req, res)=>{
@@ -461,36 +533,36 @@ io.on('connection', (socket) => {
 	// });
 
 
-	socket.on('lineChart', (data) => {
+	// socket.on('lineChart', (data) => {
 
-		let buyerData = [];
-		let sellerData = [];
-		thisRoom = allRooms.get(data.roomNum);
+	// 	let buyerData = [];
+	// 	let sellerData = [];
+	// 	thisRoom = allRooms.get(data.roomNum);
 
-		thisRoom.Users.forEach(function (value, key) {
-			if (value.role == "buyer") {
-				buyerData.push({ money: value.money });
-			} else {
-				sellerData.push({ money: value.money });
-			}
-		});
+	// 	thisRoom.Users.forEach(function (value, key) {
+	// 		if (value.role == "buyer") {
+	// 			buyerData.push({ money: value.money });
+	// 		} else {
+	// 			sellerData.push({ money: value.money });
+	// 		}
+	// 	});
 
-		buyerData.sort((a, b) => b - a);
-		sellerData.sort((a, b) => a - b);
+	// 	buyerData.sort((a, b) => b - a);
+	// 	sellerData.sort((a, b) => a - b);
 
-		let p = 0
-		while (buyerData[p]-sellerData[p]>0){
-		p++
-		}
+	// 	let p = 0
+	// 	while (buyerData[p]-sellerData[p]>0){
+	// 	p++
+	// 	}
 
-		allMoney.set('point',p);
-		allMoney.set('buyer',buyerData);
-		allMoney.set('seller',sellerData);
-		console.log(allMoney)
+	// 	allMoney.set('point',p);
+	// 	allMoney.set('buyer',buyerData);
+	// 	allMoney.set('seller',sellerData);
+	// 	console.log(allMoney)
 
-		io.emit('lineChartData', Array.from(allMoney));
+	// 	io.emit('lineChartData', Array.from(allMoney));
 
-	})
+	// })
 	//===============林育緹部分結束==================//
 
 	//===============高鵬雲部分====================//
