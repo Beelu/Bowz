@@ -598,20 +598,20 @@ io.on('connection', (socket) => {
 	var allUsers = thisRoom.Users;
 
 	var thisRound = req.body.transaction['round'];
-    var payer_id = req.body.transaction['payer'];//獲取付款者ID
+    var payer_id = req.body.transaction['payer'];//獲取付款者IDcc
     var receiver_id = req.body.transaction['receiver'];//獲取付款者ID
     var money = req.body.transaction['money'];//獲取付款者ID
 
     console.log("收到確認要求"+payer_id);
 
     //廣播搜尋
-    socketIO.to(req.body.transaction[roomNum]).emit('search_user', payer_id);
+    socketIO.to(req.body.transaction['roomNum']).emit('search_user', payer_id);
 
     //聽取回應
     socket.on('get_chek_point', function(chek_point){
 
         console.log(chek_point)        
-        
+    
         //交易成功寫入交易紀錄表
         if(chek_point==='1'){
           allUsers.get(receiver_id).money += input_money;
