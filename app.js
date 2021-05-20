@@ -594,18 +594,18 @@ io.on('connection', (socket) => {
   */
   app.post("/checkQRcode", function (req, res, next) {
 
-	var thisRoom = allRooms.get(req.body.transaction['roomNum']);//獲取房間id
+	var thisRoom = allRooms.get(req.body.transaction.get('roomNum');//獲取房間id
 	var allUsers = thisRoom.Users;
 
-	var thisRound = req.body.transaction['round'];
-    var payer_id = req.body.transaction['payer'];//獲取付款者IDcc
-    var receiver_id = req.body.transaction['receiver'];//獲取付款者ID
-    var money = req.body.transaction['money'];//獲取付款者ID
+	var thisRound = req.body.transaction.get('round');
+    var payer_id = req.body.transaction.get('payer');//獲取付款者IDcc
+    var receiver_id = req.body.transaction.get('receiver');//獲取付款者ID
+    var money = req.body.transaction.get('money');//獲取付款者ID
 
     console.log("收到確認要求"+payer_id);
 
     //廣播搜尋
-    socketIO.to(req.body.transaction['roomNum']).emit('search_user', payer_id);
+    socketIO.to(req.body.transaction.get('roomNum')).emit('search_user', payer_id);
 
     //聽取回應
     socket.on('get_chek_point', function(chek_point){
