@@ -1,4 +1,5 @@
 const { countReset } = require('console');
+const { Socket } = require('dgram');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -32,12 +33,12 @@ var testusers = new Map();
 var records = [];
 var lineChartData = new Map();
 var allMoneyData =[];
-testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50});
-testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60});
-testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20}); 
-testusers.set('456', {username: '456', money: 450, role:"seller", price:100, item:null, score:30});
-testusers.set('567', {username: '567', money: 760, role:"seller", price:90,  item:null, score:40});
-testusers.set('678', {username: '678', money: 350, role:"seller", price:90,  item:null, score:90});
+testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50, socketID:null});
+testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60, socketID:null});
+testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20, socketID:null}); 
+testusers.set('456', {username: '456', money: 450, role:"seller", price:100, item:null, score:30, socketID:null});
+testusers.set('567', {username: '567', money: 760, role:"seller", price:90,  item:null, score:40, socketID:null});
+testusers.set('678', {username: '678', money: 350, role:"seller", price:90,  item:null, score:90, socketID:null});
 allRooms.set("9487",{
 	round:[{
 		ratio: 0.7,
@@ -473,11 +474,15 @@ app.post('/saveRecord', (req, res)=>{
 
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
+
+
 	//進入房間
 	socket.on('enterRoom', (data) => {
 		socket.join(data.roomNum);
+
 //		console.log(io.sockets.adapter.rooms);
 	});
+
 
 	//test
 	socket.on('test', (data) => {
@@ -574,17 +579,24 @@ io.on('connection', (socket) => {
     
 
     var req_payer = req.body.user_id;//獲取收款人id
-    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id    ////假資料!!!!!!!
+    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id
     var theseUsers = thisRoom.Users;//獲取房間所有user
     var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
 
     res.json(reciver_info.money);
   });
 
-	  //公告訊息////////
-  socket.on('sendsysmsg', function(msg, roomNum){ 
+	//test
+	socket.on('test', (data) => {
+		socket.emit('testResponse', {s:"success"});
+	});
 
-    socketIO.to(roomNum).emit('sys',msg);
+	//公告訊息////////
+  	socket.on('sendsysmsg', function(data) { 
+		var thisRoom = data.roomNum;
+		var msg = data.msg;
+
+    	io.to(thisRoom).emit('sys', {msg:msg});
 
   });
 
@@ -592,15 +604,16 @@ io.on('connection', (socket) => {
   *找payer
   *回傳付錢者回應
   */
+ /*
   app.post("/checkQRcode", function (req, res, next) {
 
-	var thisRoom = allRooms.get(req.body.transaction.get('roomNum');//獲取房間id
+	var thisRoom = allRooms.get(req.body.transaction.get('roomNum'));//獲取房間id
 	var allUsers = thisRoom.Users;
 
 	var thisRound = req.body.transaction.get('round');
     var payer_id = req.body.transaction.get('payer');//獲取付款者IDcc
     var receiver_id = req.body.transaction.get('receiver');//獲取付款者ID
-    var money = req.body.transaction.get('money');//獲取付款者ID
+    var money = req.body.transaction.get('money');
 
     console.log("收到確認要求"+payer_id);
 
@@ -617,7 +630,6 @@ io.on('connection', (socket) => {
           allUsers.get(receiver_id).money += input_money;
 		  allUsers.get(payer_id).money -= input_money;
           thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
-          console.log(thisRoom.round);
         }
 
          //回傳res
@@ -625,17 +637,77 @@ io.on('connection', (socket) => {
     })
 
   });
+*/	
+  	/*
+	*紀錄User建立connerction後的socket物件
+	*/
+	socket.on('setSocket', function(data){
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+		var thisuser = allUsers.get(String(data.user_id));
+
+		thisuser.socketID = socket.id;
+		var s_id =  thisuser.socketID;
+
+		socket.emit('testsocket', {s:s_id});
+	});
+  	  
+
+    /*交易確認要求
+  	* socket版本
+  	*/
+	  socket.on('checkQRcode', (data) =>{
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+		
+		var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+		var payerSocket = payer.socketID;
+		var receiver_id = data.receiver_id;
+		
+		socket.broadcast.to(payerSocket).emit('transCheckReq', receiver_id);
+		
+	});
+
+	//聽取回應
+	socket.on('get_chek_point', (data)=>{
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+
+		var thisRound = data.round//獲取本回合
+		var money = data.money;//交易金額
+
+		var payer = allUsers.get(data.payer_id)//獲取付款者ID
+		var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
+		var receiverSocket = receiver.socketID;
+		var chek_point = data.chek_point;
+
+		//交易成功寫入交易紀錄表
+		if(chek_point==1){
+			receiver.money += input_money;
+			payer.money -= input_money;
+			thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
+		}
+
+		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
+	})
 
 
+	
+  	//test
+	socket.on('test', (data) => {
+		socket.emit('testResponse', {s:"success"});
+	});
 
 	//交易紀錄要求
-	socket.on('sendRecordRequest', function (roomNum, round) {
-		
-		var thisRoom = allRooms.get(roomNum);//獲取房間id
-		var thisRound = thisRoom.round[round];
+	socket.on('sendRecordRequest', (roomNum, round)=> {
+
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var thisRound = thisRoom.round[data.round];
+		var thisrecord =  thisRound.record;
 
 		//傳送交易紀錄
-		socket.emit('getRecordRequest', thisRound.record);
+		socket.emit('getRecordRequest',{record:thisrecord});
+
 	});
 	//============高鵬雲的部分結束=============//
 });
