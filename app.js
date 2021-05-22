@@ -699,7 +699,7 @@ io.on('connection', (socket) => {
 	});
 
 	//交易紀錄要求
-	socket.on('sendRecordRequest', (roomNum, round)=> {
+	socket.on('sendRecordRequest', (data)=> {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var thisRound = thisRoom.round[data.round];
