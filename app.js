@@ -67,7 +67,6 @@ allRooms.set("9487",{
 	Users:testusers,
 	nowRound:0
 })
-
 //初始設置
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -641,16 +640,21 @@ io.on('connection', (socket) => {
   	/*
 	*紀錄User建立connerction後的socket物件
 	*/
-	socket.on('setSocket', function(data){
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var allUsers = thisRoom.Users;//獲取所有Users
-		var thisuser = allUsers.get(String(data.user_id));
+	socket.on('setSocket', (data)=>{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var allUsers = thisRoom.Users;//獲取所有Users
+			var thisuser = allUsers.get(String(data.user_id));
 
-		thisuser.socketID = socket.id;
-		var s_id =  thisuser.socketID;
+			thisuser.socketID = socket.id;
+			var s_id = thisuser.socketID;
 
-		socket.emit('testsocket', {s:s_id});
+			//test
+			var testid =  allUsers.get(String(234)).socketID;
+			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
+
+			socket.emit('testsocket',  {s:s_id});
 	});
+
   	  
 
     /*交易確認要求
@@ -683,9 +687,9 @@ io.on('connection', (socket) => {
 
 		//交易成功寫入交易紀錄表
 		if(chek_point==1){
-			receiver.money += input_money;
-			payer.money -= input_money;
-			thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
+			receiver.money += money;
+			payer.money -= money;
+			thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 		}
 
 		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
