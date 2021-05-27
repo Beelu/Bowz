@@ -1,4 +1,5 @@
 const { countReset } = require('console');
+const { Socket } = require('dgram');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -20,6 +21,7 @@ var express = require("express"),
 	user = require("./models/user"),
 	transaction = require('./models/transaction'),
 	record = require('./models/record'),
+	room = require('./models/room'),
 	async = require("async"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
@@ -64,7 +66,7 @@ allRooms.set("9487",{
 	roundTime:120,
 	roomName:"保志的測試",
 	Users:testusers,
-	nowRound:0
+	nowRound:-1
 })
 
 //初始設置
@@ -220,7 +222,7 @@ app.post("/forget", (req, res) => {
 			var content = {
 				to: founduser.email,
 				from: "gankgank8787@gmail.com",
-				subject: "Reset Password From YelpCamp",
+				subject: "Reset Password",
 				text: "click the link below to reset you password.\n http://lbdgame.mgt.ncu.edu.tw:8000/forgetpassword2?token=" + token
 			}
 			transport.sendMail(content, (err) => {
@@ -272,41 +274,44 @@ app.post("/enterRoom", (req, res) => {
 	}
 });
 
+//創新房間(加進資料庫)
+app.post("/createRoom", (req, res) => {
+	var createRoom = {
+		owner: req.body.email,
+		roundInfo: req.body.roundInfo,
+		gameType: req.body.gameType,
+		roomName: req.body.roomName,
+		roundTime: req.body.roundTime
+	}
+
+	room.create(createRoom, (err, newRoom) => {
+		if (err) {
+			console.log(err);
+		}
+		res.json({message:"successfully create room."})
+	})
+});
+
 //開新房間
 app.post("/openRoom", (req, res) => {
-	roomID = Math.floor(Math.random() * 99999).toString();
+	randomID = Math.floor(Math.random() * 99999).toString();
 
 	var Users = new Map();				//新增該房間使用者名單
-	Users.set(req.body.ID, { username: req.body.username, isManager: true });					//設定進入開房者的資料
-	// allRooms.set(roomID, {
-	// 	round:[{
-	// 		ratio: req.body.ratio,
-	// 		initMoney: req.body.initMoney,
-	// 		saleMin: req.body.saleMin,
-	// 		saleMax: req.body.saleMax,
-	// 		buyMin: req.body.buyMin,
-	// 		buyMax: req.body.buyMax,
-	// 		interval: req.body.interval,
-	// 		item: req.body.item,
-	// 		records:[]
-	// 	}],
-	//	gameType:req.bode.gameType
-	// 	roomName: req.body.roomName,
-	// 	roundTime:req.body.roundTime,
-	// 	Users:Users,
-	// 	round:0
-	// });
-	allRooms.set(roomID, {
-		round:req.body.roundInfo,
-		gameType:req.bode.gameType,
-		roundTime:req.body.roundTime,
-		roomName: req.body.roomName,
-		Users:Users,
-		round:0
+	console.log(req.body.roomID)
+	Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
+	room.findById(req.body.roomID, (err, findroom) => {
+		allRooms.set(randomID, {
+			round:findroom.roundInfo,
+			gameType:findroom.gameType,
+			roundTime:findroom.roundTime,
+			roomName: findroom.roomName,
+			Users:Users,
+			nowRound:-1
+		});
 	});
-	
-	console.log(allRooms.get(roomID));
-	res.json({ pinCode: roomID });
+
+	console.log(allRooms);
+	res.json({ pinCode: randomID });
 });
 
 //=====startGame=====
@@ -458,7 +463,7 @@ app.post('/saveRecord', (req, res)=>{
 		}
 		await recording();
 		//存進所有歷史紀錄
-		console.log(tempTotalTrans);
+		//console.log(tempTotalTrans);
 		newRecord.transactions = tempTotalTrans;
 		newRecord.save();
 

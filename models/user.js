@@ -5,14 +5,14 @@ var userSchema = new mongoose.Schema({
 	email:{type:String, unique:true, required: true},
   password: String,
   schoolname:String,
-  ID:Number,
+  ID:String,
   username:String,
   avatar:Number,
   allScore:String,
   teacher:String,
   isManager:Boolean,
   resetPWtoken: String,
-	resetPWexpires: String
+	resetPWexpires: String,
 });
 
 userSchema.plugin(passportLocalMongoose, {usernameField: "email"});
