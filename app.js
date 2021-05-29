@@ -686,6 +686,7 @@ io.on('connection', (socket) => {
 			receiver.money += money;
 			payer.money -= money;
 			thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+			socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
 		}
 
 		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
@@ -709,6 +710,7 @@ io.on('connection', (socket) => {
 		
 
     //交易紀錄要求
+    /*
     socket.on('sendRecordRequest', function (data) {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
@@ -718,6 +720,7 @@ io.on('connection', (socket) => {
 		//傳送交易紀錄
 		socket.emit('getRecordRequest',{record:thisrecord});
 	});
+    */
 
 	//============高鵬雲的部分結束=============//
 });
