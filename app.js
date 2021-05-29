@@ -695,8 +695,13 @@ io.on('connection', (socket) => {
 
 	
   	//test
-	socket.on('test', (data) => {
-		socket.emit('testResponse', {s:"success"});
+	socket.on('faketransc', (data) => {
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+
+		var thisRound = data.round//獲取本回合
+		
+		socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
 	});
 
 	//公告訊息////////
