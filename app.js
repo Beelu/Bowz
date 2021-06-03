@@ -458,6 +458,36 @@ app.post('/saveRecord', (req, res)=>{
 	});
 });
 
+	/*
+* 獲取管理員創建的房間
+* 使用email來搜尋
+*/
+app.post('/getRoomList', (req, res)=>{
+	async function run() {
+		var room_list = []
+		try {
+			await client.connect();
+			const database = client.db("myFirstDatabase");
+			const rooms_model = database.collection("rooms");
+	
+			// Query for a movie that has the title 'The Room'
+			const query = { email: req.body.email };
+	
+			const user_rooms = await rooms_model.find(query);
+			
+			let document;
+			while ((document = await user_rooms.next())) {
+				room_list.push(document);
+			}
+			res.json(room_list);
+			console.log("rreee",room_list)
+		} finally {
+			await client.close();
+		}
+	}
+	run()
+});
+	
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
 
