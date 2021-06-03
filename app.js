@@ -278,6 +278,7 @@ app.post("/createRoom", (req, res) => {
 	var createRoom = {
 		owner: req.body.email,
 		roundInfo: req.body.roundInfo,
+		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime
@@ -285,7 +286,7 @@ app.post("/createRoom", (req, res) => {
 
 	room.create(createRoom, (err, newRoom) => {
 		if (err) {
-			console.log(err);
+			res.json({message:err})
 		}
 		res.json({message:"successfully create room."})
 	})
