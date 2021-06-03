@@ -32,8 +32,9 @@ var express = require("express"),
 var allRooms = new Map();
 var testusers = new Map();
 var records = [];
-var lineChartData = new Map();
-var allMoneyData =[];
+var tmpChartData = new Map();
+var totalChartData = new Map();
+
 testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50, socketID:null});
 testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60, socketID:null});
 testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20, socketID:null}); 
@@ -315,12 +316,13 @@ app.post("/openRoom", (req, res) => {
 });
 
 //=====startGame=====
+
+
 app.post("/assignRole", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let roundNum = req.body.roundNum;
-	console.log(req.body);
-	let total = thisRoom.Users.size; ;
+	let total = thisRoom.Users.size; 
 	let saleMax = thisRoom.round[roundNum].saleMax;
 	let buyMax = thisRoom.round[roundNum].buyMax;
 	let saleMin = thisRoom.round[roundNum].saleMin;
@@ -331,6 +333,8 @@ app.post("/assignRole", (req, res) => {
 	let bcount = 0;
 	let tcount = 0;
 	let rantmp = 0;
+	let buyerMoneyData = [];
+	let sellerMoneyData = [];
 
 	if(thisRoom.round[roundNum].ratio == null){
 		do{
@@ -345,18 +349,14 @@ app.post("/assignRole", (req, res) => {
 	thisRoom.Users.forEach(function(value,key) {
 		if(tcount%2==0){
 			rantmp = Math.floor(Math.random() * 2)
-			console.log("case1")
 		}
-	
 		if(sellerNum>total/2){
 			if(scount >= sellerNum/2 && sellerNum>scount){
 				rantmp=0;
-				console.log("case2 : "+scount)
 			}
 		}else if(sellerNum<total/2){
 			if( bcount <= (total-sellerNum)/2 && total-sellerNum>bcount){
 				rantmp=1;
-				console.log("case3 : "+bcount)
 			}
 		}else{}
 
@@ -368,7 +368,6 @@ app.post("/assignRole", (req, res) => {
 				value.money = money 
 				rantmp=1
 				scount++;
-				console.log("scount+1")
 				break;
 			case 1:
 				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
@@ -377,35 +376,15 @@ app.post("/assignRole", (req, res) => {
 				value.money = money
 				rantmp=0
 				bcount++
-				console.log("bcount+1")
 				break;
 		}
 
 		tcount++;
 		thisRoom.Users.set(key,value)
 		});
-	console.log("scount"+scount)
-	console.log("bcount"+bcount)
-	console.log("sellerNum"+sellerNum)
+
 	allRooms.set(req.body.roomNum, thisRoom);	
-	userData = thisRoom.Users
-	res.json({ data: Array.from(userData)});
-
-});
-
-app.post("/lineChartData", (req,res) => {
-	let data = lineChartData.get(req.body.roomNum);
-	res.json({ data: Array.from(data)});
-
-})
-
-app.post("/startGameTime",(req,res)=>{
-	let thisRoom = allRooms.get(req.body.roomNum);
-	let buyerMoneyData = [];
-	let sellerMoneyData = [];
-	let dt = new Date();
-
-	thisRoom.nowRound ++;
+	userData = thisRoom.Users;
 
 	thisRoom.Users.forEach(function(value, key) {
 		if(value.role=="buyer"){
@@ -413,22 +392,25 @@ app.post("/startGameTime",(req,res)=>{
 		}else{
 			sellerMoneyData.push(value.money);
 		}
-		});
-		
-		buyerMoneyData.sort((a, b) => b - a);
-		sellerMoneyData.sort((a, b) => a - b);
-		
-		let p = 0
-		while (buyerMoneyData[p]-sellerMoneyData[p]>0){
-			p++
-		}
-		
-	allMoneyData.push({buyer:buyerMoneyData,seller:sellerMoneyData,point:p});
-	lineChartData.set(req.body.roomNum,allMoneyData);
-	console.log("allMoneyData"+allMoneyData)
-	console.log("lineChartData"+lineChartData)
+	  });
 
-	res.json({data:dt});
+	buyerMoneyData.sort((a, b) => b - a);
+	sellerMoneyData.sort((a, b) => a - b);
+
+	let p = 0
+	while (buyerMoneyData[p]-sellerMoneyData[p]>0){
+		p++
+	}
+
+	tmpChartData.set(req.body.roomNum ,[{buyer:buyerMoneyData,seller:sellerMoneyData,point:p}])
+	res.json({ userData: Array.from(userData) , chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+
+});
+
+
+app.post("/totalChartData", (req,res) => {
+	let data = totalChartData.get(req.body.roomNum);
+	res.json({data:data});
 })
 
 //===========遊戲後儲存歷史資料===============
@@ -493,6 +475,19 @@ io.on('connection', (socket) => {
 		socket.emit('testResponse', {s:"success"});
 	});
 
+	socket.on('startTime',(req)=>{
+		let tmp = tmpChartData.get(req.roomNum)
+		let chartData = totalChartData.get(req.roomNum);
+		if (chartData == null){
+			chartData = [tmp];
+		}else{
+			chartData.push(tmp)
+		}
+		totalChartData.set(req.roomNum,chartData);
+		req.nowRound += 1 ;
+		let dt = new Date();
+		io.emit('startTimeResponse', dt);
+	});
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
 	// socket.on('startGame', (data) => {
@@ -687,6 +682,7 @@ io.on('connection', (socket) => {
 			receiver.money += money;
 			payer.money -= money;
 			thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+			socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
 		}
 
 		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
@@ -695,8 +691,13 @@ io.on('connection', (socket) => {
 
 	
   	//test
-	socket.on('test', (data) => {
-		socket.emit('testResponse', {s:"success"});
+	socket.on('faketransc', (data) => {
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+
+		var thisRound = data.round//獲取本回合
+		
+		socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
 	});
 
 	//公告訊息////////
@@ -710,6 +711,7 @@ io.on('connection', (socket) => {
 		
 
     //交易紀錄要求
+    /*
     socket.on('sendRecordRequest', function (data) {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
@@ -719,6 +721,7 @@ io.on('connection', (socket) => {
 		//傳送交易紀錄
 		socket.emit('getRecordRequest',{record:thisrecord});
 	});
+    */
 
 	//============高鵬雲的部分結束=============//
 });
