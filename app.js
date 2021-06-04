@@ -412,6 +412,12 @@ app.post("/totalChartData", (req,res) => {
 	res.json({data:data});
 })
 
+app.post("/changeSingleMoney", (req,res) => {
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let thisUser = thisRoom.Users.get(req.body.userID)
+	thisUser.price = parseInt(req.body.money)
+})
+
 //===========遊戲後儲存歷史資料===============
 app.post('/saveRecord', (req, res)=>{
 	var saveRoom = allRooms.get(req.body.roomNum);
