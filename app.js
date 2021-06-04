@@ -1,9 +1,11 @@
 const { countReset } = require('console');
 const { Socket } = require('dgram');
+const {MongoClient} = require('mongodb');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
 }
+
 
 var express = require("express"),
 	app = express(),
@@ -83,6 +85,7 @@ app.use(cors());
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+const client = new MongoClient(url);
 
 //passport
 app.use(require("express-session")({
@@ -279,6 +282,7 @@ app.post("/createRoom", (req, res) => {
 	var createRoom = {
 		owner: req.body.email,
 		roundInfo: req.body.roundInfo,
+		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime
@@ -286,7 +290,7 @@ app.post("/createRoom", (req, res) => {
 
 	room.create(createRoom, (err, newRoom) => {
 		if (err) {
-			console.log(err);
+			res.json({message:err})
 		}
 		res.json({message:"successfully create room."})
 	})
@@ -463,6 +467,36 @@ app.post('/saveRecord', (req, res)=>{
 	});
 });
 
+	/*
+* 獲取管理員創建的房間
+* 使用email來搜尋
+*/
+app.post('/getRoomList', (req, res)=>{
+	async function run() {
+		var room_list = []
+		try {
+			await client.connect();
+			const database = client.db("myFirstDatabase");
+			const rooms_model = database.collection("rooms");
+	
+			// Query for a movie that has the title 'The Room'
+			const query = { email: req.body.email };
+	
+			const user_rooms = await rooms_model.find(query);
+			
+			let document;
+			while ((document = await user_rooms.next())) {
+				room_list.push(document);
+			}
+			res.json(room_list);
+			console.log("rreee",room_list)
+		} finally {
+			await client.close();
+		}
+	}
+	run()
+});
+	
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
 

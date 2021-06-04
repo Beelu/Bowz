@@ -3,8 +3,7 @@ var mongoose = require("mongoose");
 var roomSchema = new mongoose.Schema({
   owner:String,       //email
   roundInfo:[{
-    ratio: Number,
-    initMoney: Number,
+    ratio: String,
     saleMin: Number,
     saleMax: Number,
     buyMin: Number,
@@ -12,6 +11,7 @@ var roomSchema = new mongoose.Schema({
     interval: Number,
     item: String,
   }],
+  initMoney: Number,
   gameType: Number,
   roomName: String,
   roundTime: Number,
