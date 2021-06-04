@@ -1,5 +1,6 @@
 const { countReset } = require('console');
 const { Socket } = require('dgram');
+const {MongoClient} = require('mongodb');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -84,6 +85,7 @@ app.use(cors());
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+const client = new MongoClient(url);
 
 //passport
 app.use(require("express-session")({
