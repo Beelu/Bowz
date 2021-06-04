@@ -320,7 +320,6 @@ app.post("/openRoom", (req, res) => {
 
 //=====startGame=====
 
-
 app.post("/assignRole", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
@@ -336,8 +335,6 @@ app.post("/assignRole", (req, res) => {
 	let bcount = 0;
 	let tcount = 0;
 	let rantmp = 0;
-	let buyerMoneyData = [];
-	let sellerMoneyData = [];
 
 	if(thisRoom.round[roundNum].ratio == null){
 		do{
@@ -353,6 +350,7 @@ app.post("/assignRole", (req, res) => {
 		if(tcount%2==0){
 			rantmp = Math.floor(Math.random() * 2)
 		}
+	
 		if(sellerNum>total/2){
 			if(scount >= sellerNum/2 && sellerNum>scount){
 				rantmp=0;
@@ -368,7 +366,7 @@ app.post("/assignRole", (req, res) => {
 				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
 				money = interval * Math.ceil(money/interval)
 				value.role = 'seller' 
-				value.money = money 
+				value.price = money 
 				rantmp=1
 				scount++;
 				break;
@@ -376,7 +374,7 @@ app.post("/assignRole", (req, res) => {
 				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
 				money = interval * Math.ceil(money/interval)
 				value.role = 'buyer' 
-				value.money = money
+				value.price = money
 				rantmp=0
 				bcount++
 				break;
@@ -387,13 +385,24 @@ app.post("/assignRole", (req, res) => {
 		});
 
 	allRooms.set(req.body.roomNum, thisRoom);	
-	userData = thisRoom.Users;
+	userData = thisRoom.Users
 
+	res.json({ userData: Array.from(userData)});
+
+});
+
+app.post('/chartData',(req,res)=>{
+
+	let buyerMoneyData = [];
+	let sellerMoneyData = [];
+
+
+	let thisRoom = allRooms.get(req.body.roomNum);
 	thisRoom.Users.forEach(function(value, key) {
 		if(value.role=="buyer"){
-			buyerMoneyData.push(value.money);
+			buyerMoneyData.push(value.price);
 		}else{
-			sellerMoneyData.push(value.money);
+			sellerMoneyData.push(value.price);
 		}
 	  });
 
@@ -406,10 +415,9 @@ app.post("/assignRole", (req, res) => {
 	}
 
 	tmpChartData.set(req.body.roomNum ,[{buyer:buyerMoneyData,seller:sellerMoneyData,point:p}])
-	res.json({ userData: Array.from(userData) , chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
-
-});
-
+	console.log(tmpChartData)
+	res.json({chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+})
 
 app.post("/totalChartData", (req,res) => {
 	let data = totalChartData.get(req.body.roomNum);
