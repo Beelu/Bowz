@@ -638,44 +638,7 @@ io.on('connection', (socket) => {
 	});
 
 
-  /*交易確認要求
-  *找payer
-  *回傳付錢者回應
-  */
- /*
-  app.post("/checkQRcode", function (req, res, next) {
-
-	var thisRoom = allRooms.get(req.body.transaction.get('roomNum'));//獲取房間id
-	var allUsers = thisRoom.Users;
-
-	var thisRound = req.body.transaction.get('round');
-    var payer_id = req.body.transaction.get('payer');//獲取付款者IDcc
-    var receiver_id = req.body.transaction.get('receiver');//獲取付款者ID
-    var money = req.body.transaction.get('money');
-
-    console.log("收到確認要求"+payer_id);
-
-    //廣播搜尋
-    socketIO.to(req.body.transaction.get('roomNum')).emit('search_user', payer_id);
-
-    //聽取回應
-    socket.on('get_chek_point', function(chek_point){
-
-        console.log(chek_point)        
-    
-        //交易成功寫入交易紀錄表
-        if(chek_point==='1'){
-          allUsers.get(receiver_id).money += input_money;
-		  allUsers.get(payer_id).money -= input_money;
-          thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
-        }
-
-         //回傳res
-         res.send(chek_point);
-    })
-
-  });
-*/	
+	
   	/*
 	*紀錄User建立connerction後的socket物件
 	*/
@@ -757,6 +720,44 @@ io.on('connection', (socket) => {
 	});
 		
 
+  /*交易確認要求
+  *找payer
+  *回傳付錢者回應
+  */
+ /*
+  app.post("/checkQRcode", function (req, res, next) {
+
+	var thisRoom = allRooms.get(req.body.transaction.get('roomNum'));//獲取房間id
+	var allUsers = thisRoom.Users;
+
+	var thisRound = req.body.transaction.get('round');
+    var payer_id = req.body.transaction.get('payer');//獲取付款者IDcc
+    var receiver_id = req.body.transaction.get('receiver');//獲取付款者ID
+    var money = req.body.transaction.get('money');
+
+    console.log("收到確認要求"+payer_id);
+
+    //廣播搜尋
+    socketIO.to(req.body.transaction.get('roomNum')).emit('search_user', payer_id);
+
+    //聽取回應
+    socket.on('get_chek_point', function(chek_point){
+
+        console.log(chek_point)        
+    
+        //交易成功寫入交易紀錄表
+        if(chek_point==='1'){
+          allUsers.get(receiver_id).money += input_money;
+		  allUsers.get(payer_id).money -= input_money;
+          thisRoom.round[thisRound].record.push({seller: receiver_id, buyer: payer_id, price: money});
+        }
+
+         //回傳res
+         res.send(chek_point);
+    })
+
+  });
+*/
     //交易紀錄要求
     /*
     socket.on('sendRecordRequest', function (data) {
