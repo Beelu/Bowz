@@ -729,7 +729,7 @@ io.on('connection', (socket) => {
 			receiver.money += money;
 			payer.money -= money;
 			thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-			socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
+			socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
 		}
 
 		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
@@ -744,7 +744,7 @@ io.on('connection', (socket) => {
 
 		var thisRound = data.round//獲取本回合
 		
-		socket.emit('sendRecordRequest', thisRoom.round[thisRound].record)
+		socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
 	});
 
 	//公告訊息////////
