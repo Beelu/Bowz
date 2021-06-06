@@ -426,8 +426,29 @@ app.post("/totalChartData", (req,res) => {
 
 app.post("/changeSingleMoney", (req,res) => {
 	let thisRoom = allRooms.get(req.body.roomNum);
-	let thisUser = thisRoom.Users.get(req.body.userID)
-	thisUser.price = parseInt(req.body.money)
+	let index = req.body.index
+	let role = req.body.role
+	let money =  parseInt(req.body.money)
+	let chartData = tmpChartData.get(req.body.roomNum);
+
+	if (role == "seller"){
+		oldMoney = chartData[0].seller[index]
+		chartData[0].seller[index] = money
+		chartData[0].seller.sort((a, b) => a - b);
+	}
+	else {
+		oldMoney = chartData[0].buyer[index]
+		chartData[0].buyer[index] = money
+		chartData[0].buyer.sort((a, b) => b - a);
+	}
+
+	thisRoom.Users.forEach(function(value,key) {
+		if (value.price == oldMoney && value.role == role){
+			value.price = money
+		}
+	})
+	res.json({ chartData: chartData[0]});
+	
 })
 
 //===========遊戲後儲存歷史資料===============
@@ -533,7 +554,8 @@ io.on('connection', (socket) => {
 		totalChartData.set(req.roomNum,chartData);
 		req.nowRound += 1 ;
 		let dt = new Date();
-		io.emit('startTimeResponse', dt);
+		io.sockets.in(req.roomNum).emit('startTimeResponse', dt);
+		//io.emit('startTimeResponse', dt);
 	});
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
