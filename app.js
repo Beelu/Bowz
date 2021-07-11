@@ -1,6 +1,7 @@
 const { countReset } = require('console');
 const { Socket } = require('dgram');
 const {MongoClient} = require('mongodb');
+// const room = require('./models/room');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -295,6 +296,27 @@ app.post("/createRoom", (req, res) => {
 		}
 		res.json({message:"successfully create room."})
 	})
+});
+
+//編輯房間
+app.post("/editRoom/:id", (req, res) => {
+	var editRoom = {
+		owner: req.body.email,
+		interval: req.body.interval,
+		roundInfo: req.body.roundInfo,
+		initMoney: req.body.initMoney,
+		gameType: req.body.gameType,
+		roomName: req.body.roomName,
+		roundTime: req.body.roundTime
+	}
+
+	room.findByIdAndUpdate(req.params.id, editRoom, (err, found) => {
+		if(err){
+			res.json({message:"something got wrong."});
+		}else{
+			res.json({message:"successfully edit room."});
+		}
+	});
 });
 
 //開新房間
