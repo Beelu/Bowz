@@ -519,35 +519,40 @@ app.post('/saveRecord', (req, res)=>{
 	});
 });
 
-	/*
+
+/*
 * 獲取管理員創建的房間
 * 使用email來搜尋
 */
 app.post('/getRoomList', (req, res)=>{
-	async function run() {
-		var room_list = []
-		try {
-			await client.connect();
-			const database = client.db("myFirstDatabase");
-			const rooms_model = database.collection("rooms");
-	
-			// Query for a movie that has the title 'The Room'
-			const query = { email: req.body.email };
-	
-			const user_rooms = await rooms_model.find(query);
-			
-			let document;
-			while ((document = await user_rooms.next())) {
-				room_list.push(document);
-			}
-			res.json(room_list);
-			console.log("rreee",room_list)
-		} finally {
-			await client.close();
-		}
-	}
-	run()
+        async function run() {
+                var room_list = []
+                try {
+
+                        await client.connect();
+                        const database = client.db("myFirstDatabase");
+                        const rooms_model = database.collection("rooms");
+
+                        const query = { email: req.body.email };
+                        const user_rooms = await rooms_model.find(query).toArray();
+
+                        for(i=0; i<user_rooms.length;i++){
+                                var item_arr = [];
+                                item_arr.push(user_rooms[i].roomName);
+                                item_arr.push(user_rooms[i].roundInfo.length);
+                                item_arr.push(user_rooms[i].roomid);
+                                room_list.push(item_arr);
+                        }
+
+                        res.json(room_list);
+                        console.log("rreee",room_list)
+                } finally {
+
+                }
+        }
+        run()
 });
+
 	
 //===================================socket.io=======================================//
 io.on('connection', (socket) => {
