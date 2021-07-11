@@ -281,6 +281,7 @@ app.post("/enterRoom", (req, res) => {
 app.post("/createRoom", (req, res) => {
 	var createRoom = {
 		owner: req.body.email,
+		interval: req.body.interval,
 		roundInfo: req.body.roundInfo,
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
