@@ -286,6 +286,7 @@ app.post("/createRoom", (req, res) => {
 		roundInfo: req.body.roundInfo,
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
+		roomID: req.body.roomID,
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime
 	}
@@ -306,6 +307,7 @@ app.post("/editRoom/:id", (req, res) => {
 		roundInfo: req.body.roundInfo,
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
+		roomID: req.body.roomID,
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime
 	}

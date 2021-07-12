@@ -13,6 +13,7 @@ var roomSchema = new mongoose.Schema({
   }],
   initMoney: Number,
   gameType: Number,
+  roomID: Number,
   roomName: String,
   roundTime: Number,
 });
