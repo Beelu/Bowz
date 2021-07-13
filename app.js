@@ -281,7 +281,7 @@ app.post("/enterRoom", (req, res) => {
 //創新房間(加進資料庫)
 app.post("/createRoom", (req, res) => {
 	var createRoom = {
-		owner: req.body.email,
+		email: req.body.email,
 		interval: req.body.interval,
 		roundInfo: req.body.roundInfo,
 		initMoney: req.body.initMoney,
@@ -302,7 +302,7 @@ app.post("/createRoom", (req, res) => {
 //編輯房間
 app.post("/editRoom/:id", (req, res) => {
 	var editRoom = {
-		owner: req.body.email,
+		email: req.body.email,
 		interval: req.body.interval,
 		roundInfo: req.body.roundInfo,
 		initMoney: req.body.initMoney,

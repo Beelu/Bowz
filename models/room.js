@@ -1,7 +1,7 @@
 var mongoose = require("mongoose");
 
 var roomSchema = new mongoose.Schema({
-  owner:String,       //email
+  email:String,       //owner
   roundInfo:[{
     ratio: String,
     saleMin: Number,
