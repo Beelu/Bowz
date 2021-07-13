@@ -542,7 +542,7 @@ app.post('/getRoomList', (req, res)=>{
                                 var item_arr = [];
                                 item_arr.push(user_rooms[i].roomName);
                                 item_arr.push(user_rooms[i].roundInfo.length);
-                                item_arr.push(user_rooms[i].roomid);
+                                item_arr.push(user_rooms[i]._id);
                                 room_list.push(item_arr);
                         }
 
