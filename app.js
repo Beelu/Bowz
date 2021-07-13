@@ -873,8 +873,8 @@ server.listen(3000, process.env.IP, function () {
 
 交易紀錄參數(Array):
 	records[index]{
-	 seller: 賣方ID，型態int
-	 buyer: 買方ID，型態int
-	 price: 交易金額，型態int
-	}
+	seller: 賣方ID，型態int
+	buyer: 買方ID，型態int
+	price: 交易金額，型態int
+}
 */
