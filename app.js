@@ -535,7 +535,7 @@ app.post('/getRoomList', (req, res)=>{
                         const database = client.db("myFirstDatabase");
                         const rooms_model = database.collection("rooms");
 
-                        const query = { email: req.body.email };
+                        const query = { email: ${req.body.email} };
                         const user_rooms = await rooms_model.find(query).toArray();
 
                         for(i=0; i<user_rooms.length;i++){
