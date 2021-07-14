@@ -1,7 +1,6 @@
 const { countReset } = require('console');
 const { Socket } = require('dgram');
 const {MongoClient} = require('mongodb');
-// const room = require('./models/room');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -321,6 +320,28 @@ app.post("/editRoom/:id", (req, res) => {
 	});
 });
 
+//取得特定房間資訊
+app.post("/showRoom/:id", (req, res) => {
+	room.findById(req.params.id, (err, foundroom) => {
+		if(err){
+			res.json({message:"something got wrong."})
+		}else{
+			res.json(foundroom)
+		}
+	})
+})
+
+//刪除特定房間
+app.post("/deleteRoom/:id", (req, res) => {
+	room.findByIdAndRemove(req.params.id, (err, delroom) => {
+		if(err){
+			res.json({message:"something got wrong."})
+		}else{
+			res.json({message:"successfully delete room.", room_id: delroom._id})
+		}
+	})
+})
+
 //開新房間
 app.post("/openRoom", (req, res) => {
 	randomID = Math.floor(Math.random() * 99999).toString();
@@ -343,7 +364,7 @@ app.post("/openRoom", (req, res) => {
 	res.json({ pinCode: randomID });
 });
 
-//=====startGame=====
+//====================startGame=======================
 
 app.post("/assignRole", (req, res) => {
 	
