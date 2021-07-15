@@ -131,7 +131,7 @@ app.post("/login", function (req, res, next) {
 		if (!user) { return res.status(500).json({ message: 'user not exist!', user: user }); }
 		req.logIn(user, function (err) {
 			if (err) { return next(err); }
-			res.json({ message: 'login success!', user: user });
+			res.json({ message: 'login success!', user: user});
 		});
 	})(req, res, next);
 });
@@ -170,7 +170,8 @@ app.get("/entrance", middleware.isLogin, function (req, res) {
 
 //進入房間
 app.post("/room", function (req, res) {
-	res.redirect("/room/" + req.body.roomNum);
+	res.json({user: res.locals.currentuser})
+	//res.redirect("/room/" + req.body.roomNum);
 })
 
 //==========================密碼相關====================//
