@@ -68,7 +68,8 @@ allRooms.set("9487",{
 	roundTime:120,
 	roomName:"保志的測試",
 	Users:testusers,
-	nowRound:-1
+	nowRound:-1,
+	admin_transc_times:0
 })
 //初始設置
 app.set("view engine", "ejs");
@@ -790,17 +791,27 @@ io.on('connection', (socket) => {
                 var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
                 var receiverSocket = receiver.socketID;
                 var chek_point = 1;
+		var used_times  = thisRoom.admin_transc_times;
+                var limit_times = data.limit_times;
 
                 try {
-                        receiver.money += money;
-                        thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
-                        socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                        if((used_times<limit_times)||(limit_times==-1)){
+                                receiver.money += money;
+                                thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
+                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                used_times+=1;
+                        }
+                        else{
+                                chek_point = -1;
+                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 }
                 catch(e){
                         chek_point = 0;
                         socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 }
+                thisRoom.admin_transc_times = used_times;
         });
+
 	
 
 	
