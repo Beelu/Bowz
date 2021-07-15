@@ -296,7 +296,8 @@ app.post("/createRoom", (req, res) => {
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
-		roundTime: req.body.roundTime
+		roundTime: req.body.roundTime,
+		admin_transc_times:0
 	}
 
 	room.create(createRoom, (err, newRoom) => {
@@ -316,7 +317,8 @@ app.post("/editRoom/:id", (req, res) => {
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
-		roundTime: req.body.roundTime
+		roundTime: req.body.roundTime,
+		admin_transc_times:0
 	}
 
 	room.findByIdAndUpdate(req.params.id, editRoom, (err, found) => {
@@ -364,7 +366,8 @@ app.post("/openRoom", (req, res) => {
 			roundTime:findroom.roundTime,
 			roomName: findroom.roomName,
 			Users:Users,
-			nowRound:-1
+			nowRound:-1,
+			admin_transc_times:0
 		});
 	});
 
