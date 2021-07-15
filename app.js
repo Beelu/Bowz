@@ -136,13 +136,22 @@ app.post("/login", function (req, res, next) {
 	})(req, res, next);
 });
 
+//升為管理者
+app.post("/promotion", function(req, res){
+	user.findOneAndUpdate({email: req.body.email}, {isManager: true}, (err, updateuser) => {
+		if(err){return res.json({message: "something got wrong."})}
+		res.json({message: "update completed.", email: updateuser.email})
+	})
+})
+
 //註冊實作
 app.post("/register", function (req, res) {
 	var newuser = new user({
 		schoolname: req.body.schoolname,
 		ID: req.body.ID,
 		username: req.body.username,
-		email: req.body.email
+		email: req.body.email,
+		isManager: false
 	});
 	user.register(newuser, req.body.password, function (err, user) {
 		if (err) {
