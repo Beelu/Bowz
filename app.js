@@ -804,6 +804,7 @@ io.on('connection', (socket) => {
                         else{
                                 chek_point = -1;
                                 socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+			}
                 }
                 catch(e){
                         chek_point = 0;
