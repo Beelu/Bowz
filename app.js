@@ -772,13 +772,37 @@ io.on('connection', (socket) => {
 		if(chek_point==1){
 			receiver.money += money;
 			payer.money -= money;
-			thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-			socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
-		}
+                        thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
+                        socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
+                }
 
-		socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
-	})
+                socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
+        });
 
+        //admin發送金錢
+        socket.on('set_admin_transc_req', data=>{
+                var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+                var allUsers = thisRoom.Users;//獲取所有Users
+
+                var thisRound = data.round//獲取本回合
+                var money = data.money;//交易金額
+
+                var payer = data.payer_id//獲取付款者ID
+                var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
+                var receiverSocket = receiver.socketID;
+                var chek_point = 1;
+
+                try {
+                        receiver.money += money;
+                        thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
+                        socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                }
+                catch(e){
+                        chek_point = 0;
+                        socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                }
+        });
+	
 
 	
   	//test
