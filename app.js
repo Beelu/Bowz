@@ -772,7 +772,7 @@ io.on('connection', (socket) => {
 		if(chek_point==1){
 			receiver.money += money;
 			payer.money -= money;
-                        thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
+                        thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
                         socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
                 }
 
@@ -797,7 +797,7 @@ io.on('connection', (socket) => {
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
-                                thisRoom.round[thisRound].record.push({'seller': data.receiver_id, 'buyer': data.payer_id, 'price': money});
+                                thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
                                 socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
