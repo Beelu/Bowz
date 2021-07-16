@@ -878,7 +878,7 @@ io.on('connection', (socket) => {
                 var limit_times = data.limit_times;
 		
 		if(payer_money==0){
-			allUsers.get(payer).money = 99999
+			allUsers.get(payer).money = 99999;
 		}
 		
                 try {
