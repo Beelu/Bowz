@@ -693,9 +693,8 @@ io.on('connection', (socket) => {
 			chartData.push(tmp)
 		}
 		totalChartData.set(req.roomNum,chartData);
-		req.nowRound += 1 ;
-		let dt = new Date();
-		io.sockets.in(req.roomNum).emit('startTimeResponse', dt);
+		allRooms.get(req.roomNum).nowRound+=1;
+		io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
 		//io.emit('startTimeResponse', dt);
 	});
 	//================林育緹部分===================//
