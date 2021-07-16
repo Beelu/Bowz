@@ -50,7 +50,6 @@ allRooms.set("9487",{
 		saleMax: 100,
 		buyMin: 20,
 		buyMax: 120,
-		interval: 10,
 		item: "apple",
 		record:[{seller:"asdasd", buyer:"qweqwe", price:120}, {seller:"zxczxc", buyer:"fghfgh", price:130}]},
 	{
@@ -60,12 +59,12 @@ allRooms.set("9487",{
 		saleMax: 100,
 		buyMin: 20,
 		buyMax: 120,
-		interval: 10,
 		item: "yanshou",
 		record:[{seller:"qscq", buyer:"zsees", price:100}, {seller:"zxcc", buyer:"hfgh", price:200}]}
 	],
 	gameType: 1,
 	roundTime:120,
+	interval: 10,
 	roomName:"保志的測試",
 	Users:testusers,
 	nowRound:-1,
@@ -443,6 +442,88 @@ app.post("/assignRole", (req, res) => {
 	userData = thisRoom.Users
 
 	res.json({ userData: Array.from(userData)});
+
+});
+
+app.post("/shuffle", (req, res) => {
+	
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let roundNum = req.body.roundNum;
+	let total = thisRoom.Users.size; 
+	let interval = thisRoom.interval;
+	let saleMax = thisRoom.round[roundNum].saleMax;
+	let buyMax = thisRoom.round[roundNum].buyMax;
+	let saleMin = thisRoom.round[roundNum].saleMin;
+	let buyMin = thisRoom.round[roundNum].buyMin;
+	let ratio;
+	let restrict;//紀錄買家賣家何者較少
+	let tcount = 0; //計已分配的總數量
+	let rantmp = 0; //用來隨機分配的參數
+
+	//設定ratio
+	if(thisRoom.round[roundNum].ratio == null){
+		do{
+			ratio = randomNormal({mean: 0.5})
+		}while( ratio < 0.3 || ratio > 0.7)
+	}else{
+		ratio = thisRoom.round[roundNum].ratio;
+	}
+
+	let sellerNum = Math.round(ratio * total)
+	let buyerNum = total-sellerNum
+
+	if(sellerNum>=buyerNum){
+		restrict = buyerNum;
+	}else{
+		restrict = sellerNum;
+	}
+	// 分配身份的步驟：假設有12人 buyer:5 seller:7 
+	// 1.先分配10個人分別五五買賣 2.再分配兩個seller
+	thisRoom.Users.forEach(function(value,key) {
+		
+		//上述的步驟一在if內完成，步驟二在else內完成
+		if(tcount<restrict*2){
+			if(tcount%2==0){
+				rantmp = Math.floor(Math.random() * 2)
+			}
+			switch(rantmp){
+				case 0:
+					money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+					money = interval * Math.ceil(money/interval)
+					value.role = 'seller' 
+					value.price = money 
+					rantmp=1
+					break;
+				case 1:
+					money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+					money = interval * Math.ceil(money/interval)
+					value.role = 'buyer' 
+					value.price = money
+					rantmp=0
+					break;
+			}
+			tcount++;
+			thisRoom.Users.set(key,value)
+		}else{
+			if(sellerNum>buyerNum){
+				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'seller' 
+				value.price = money 
+			}else{
+				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+				money = interval * Math.ceil(money/interval)
+				value.role = 'buyer' 
+				value.price = money
+				rantmp=0
+			}
+			
+			tcount++;
+			thisRoom.Users.set(key,value)
+		}
+	});
+	allRooms.set(req.body.roomNum, thisRoom);
+	res.json({ userData: Array.from(thisRoom.Users)});
 
 });
 
