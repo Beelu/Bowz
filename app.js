@@ -875,6 +875,8 @@ io.on('connection', (socket) => {
 		var used_times  = thisRoom.admin_transc_times;
                 var limit_times = data.limit_times;
 
+                socket.broadcast.to(receiverSocket).emit('testsocket', {s:'test'})
+                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
