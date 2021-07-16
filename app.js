@@ -853,11 +853,11 @@ io.on('connection', (socket) => {
 		if(chek_point==1){
 			receiver.money += money;
 			payer.money -= money;
-                        thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+                        thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
                         socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
                 }
 
-                socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
+                io.to(receiverSocket).emit('transcResp', chek_point)
         });
 
         //admin發送金錢
@@ -880,18 +880,18 @@ io.on('connection', (socket) => {
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
-                                thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
                         else{
                                 chek_point = -1;
-                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
 			}
                 }
                 catch(e){
                         chek_point = 0;
-                        socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                        io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 }
                 thisRoom.admin_transc_times = used_times;
         });
