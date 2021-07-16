@@ -816,7 +816,7 @@ io.on('connection', (socket) => {
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
-			socket.emit('testsocket',  {s:s_id});
+			io.to(s_id).emit('testsocket',  {s:s_id});
 	});
 
   	  
@@ -869,18 +869,22 @@ io.on('connection', (socket) => {
                 var money = data.money;//交易金額
 
                 var payer = data.payer_id//獲取付款者ID
+		var payer_money = allUsers.get(payer).money
                 var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
                 var receiverSocket = receiver.socketID;
+		
                 var chek_point = 1;
 		var used_times  = thisRoom.admin_transc_times;
                 var limit_times = data.limit_times;
-
-                socket.broadcast.to(receiverSocket).emit('testsocket', {s:'test'})
-                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+		
+		if(payer_money==0){
+			allUsers.get(payer).money = 99999
+		}
+		
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
-                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: payer, price: money});
                                 io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
