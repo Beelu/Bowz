@@ -275,7 +275,7 @@ app.post("/reset/:token", (req, res) => {
 app.post("/enterRoom", (req, res) => {
 	if (allRooms.get(req.body.roomNum)) {
 		thisRoom = allRooms.get(req.body.roomNum);
-		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false })		//設定進入使用者的資料
+		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
 		thisRoom.total = thisRoom.Users.size;
 		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
 
