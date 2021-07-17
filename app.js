@@ -374,77 +374,6 @@ app.post("/openRoom", (req, res) => {
 
 //====================startGame=======================
 
-app.post("/assignRole", (req, res) => {
-	
-	let thisRoom = allRooms.get(req.body.roomNum);
-	let roundNum = req.body.roundNum;
-	let total = thisRoom.Users.size; 
-	let saleMax = thisRoom.round[roundNum].saleMax;
-	let buyMax = thisRoom.round[roundNum].buyMax;
-	let saleMin = thisRoom.round[roundNum].saleMin;
-	let buyMin = thisRoom.round[roundNum].buyMin;
-	let interval = thisRoom.round[roundNum].interval;
-	let ratio;
-	let scount = 0;
-	let bcount = 0;
-	let tcount = 0;
-	let rantmp = 0;
-
-	if(thisRoom.round[roundNum].ratio == null){
-		do{
-			ratio = randomNormal({mean: 0.5})
-		}while( ratio < 0.3 || ratio > 0.7)
-	}else{
-		ratio = thisRoom.round[roundNum].ratio;
-	}
-
-	let sellerNum = Math.round(ratio * total)
-
-	thisRoom.Users.forEach(function(value,key) {
-		if(tcount%2==0){
-			rantmp = Math.floor(Math.random() * 2)
-		}
-	
-		if(sellerNum>total/2){
-			if(scount >= sellerNum/2 && sellerNum>scount){
-				rantmp=0;
-			}
-		}else if(sellerNum<total/2){
-			if( bcount <= (total-sellerNum)/2 && total-sellerNum>bcount){
-				rantmp=1;
-			}
-		}else{}
-
-		switch(rantmp){
-			case 0:
-				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'seller' 
-				value.price = money 
-				rantmp=1
-				scount++;
-				break;
-			case 1:
-				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'buyer' 
-				value.price = money
-				rantmp=0
-				bcount++
-				break;
-		}
-
-		tcount++;
-		thisRoom.Users.set(key,value)
-		});
-
-	allRooms.set(req.body.roomNum, thisRoom);	
-	userData = thisRoom.Users
-
-	res.json({ userData: Array.from(userData)});
-
-});
-
 app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
@@ -550,7 +479,7 @@ app.post('/chartData',(req,res)=>{
 		p++
 	}
 
-	tmpChartData.set(req.body.roomNum ,[{buyer:buyerMoneyData,seller:sellerMoneyData,point:p}])
+	tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
 	console.log(tmpChartData)
 	res.json({chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
 })
@@ -568,24 +497,67 @@ app.post("/changeSingleMoney", (req,res) => {
 	let chartData = tmpChartData.get(req.body.roomNum);
 
 	if (role == "seller"){
-		oldMoney = chartData[0].seller[index]
-		chartData[0].seller[index] = money
-		chartData[0].seller.sort((a, b) => a - b);
+		oldMoney = chartData.seller[index]
+		chartData.seller[index] = money
+		chartData.seller.sort((a, b) => a - b);
 	}
 	else {
-		oldMoney = chartData[0].buyer[index]
-		chartData[0].buyer[index] = money
-		chartData[0].buyer.sort((a, b) => b - a);
+		oldMoney = chartData.buyer[index]
+		chartData.buyer[index] = money
+		chartData.buyer.sort((a, b) => b - a);
 	}
 
+	//改掉 Users的資料
+	let count =0;
 	thisRoom.Users.forEach(function(value,key) {
-		if (value.price == oldMoney && value.role == role){
-			value.price = money
+		if (count == 0){
+			if (value.price == oldMoney && value.role == role){
+				value.price = money
+				count+=1
+			}
 		}
-	})
-	res.json({ chartData: chartData[0]});
+	});
+	allRooms.set(req.body.roomNum, thisRoom);
+	tmpChartData.set(req.body.roomNum,chartData);
+	res.json({ chartData: chartData});
 	
 })
+
+
+app.post("/changeRoleMoney", (req,res) => {
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let role = req.body.role
+	let adjustPrice =  parseInt(req.body.adjustPrice)
+	let buyerMoneyData = [];
+	let sellerMoneyData = [];
+
+	//把User裡屬於該role的金額依序調整
+	thisRoom.Users.forEach(function(value, key) {
+		if(value.role==role){
+			value.price += adjustPrice 
+		}
+		if(value.role=="buyer"){
+			buyerMoneyData.push(value.price);
+		}else{
+			sellerMoneyData.push(value.price);
+		}
+	  });
+
+	//利用buyerMoneyData和sellerMoneyData做成chartData
+	buyerMoneyData.sort((a, b) => b - a);
+	sellerMoneyData.sort((a, b) => a - b);
+
+	let p = 0
+	while (buyerMoneyData[p]-sellerMoneyData[p]>0){
+		p++
+	}
+
+	tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
+	allRooms.set(req.body.roomNum, thisRoom);	
+	res.json({ chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+	
+})
+
 
 //===========遊戲後儲存歷史資料===============
 app.post('/saveRecord', (req, res)=>{
@@ -697,6 +669,12 @@ io.on('connection', (socket) => {
 		io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
 		//io.emit('startTimeResponse', dt);
 	});
+
+	socket.on('endRound',(req)=>{
+		let msg = 'endRoundMessage'
+		io.sockets.in(req.roomNum).emit('endRoundResponse',msg);
+	});
+
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
 	// socket.on('startGame', (data) => {
