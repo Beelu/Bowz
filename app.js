@@ -392,7 +392,7 @@ app.post("/shuffle", (req, res) => {
 	let rantmp = 0; //用來隨機分配的參數
 
 	if(thisRoom.isGamimg == true){
-		res.json({msg:'Error'})
+		res.json({msg:'error'})
 	}else{
 		//設定ratio
 		if(thisRoom.round[roundNum].ratio == null){
