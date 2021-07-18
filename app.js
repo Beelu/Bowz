@@ -62,6 +62,7 @@ allRooms.set("9487",{
 		item: "yanshou",
 		record:[{seller:"qscq", buyer:"zsees", price:100}, {seller:"zxcc", buyer:"hfgh", price:200}]}
 	],
+	isGaming:false,
 	gameType: 1,
 	roundTime:120,
 	interval: 10,
@@ -364,7 +365,8 @@ app.post("/openRoom", (req, res) => {
 			roomName: findroom.roomName,
 			Users:Users,
 			nowRound:-1,
-			admin_transc_times:0
+			admin_transc_times:0,
+			isGaming:false
 		});
 	});
 
@@ -389,71 +391,74 @@ app.post("/shuffle", (req, res) => {
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
 
-	//設定ratio
-	if(thisRoom.round[roundNum].ratio == null){
-		do{
-			ratio = randomNormal({mean: 0.5})
-		}while( ratio < 0.3 || ratio > 0.7)
+	if(thisRoom.isGamimg == true){
+		res.json({msg:'Error'})
 	}else{
-		ratio = thisRoom.round[roundNum].ratio;
-	}
+		//設定ratio
+		if(thisRoom.round[roundNum].ratio == null){
+			do{
+				ratio = randomNormal({mean: 0.5})
+			}while( ratio < 0.3 || ratio > 0.7)
+		}else{
+			ratio = thisRoom.round[roundNum].ratio;
+		}
 
-	let sellerNum = Math.round(ratio * total)
-	let buyerNum = total-sellerNum
+		let sellerNum = Math.round(ratio * total)
+		let buyerNum = total-sellerNum
 
-	if(sellerNum>=buyerNum){
-		restrict = buyerNum;
-	}else{
-		restrict = sellerNum;
-	}
-	// 分配身份的步驟：假設有12人 buyer:5 seller:7 
-	// 1.先分配10個人分別五五買賣 2.再分配兩個seller
-	thisRoom.Users.forEach(function(value,key) {
-		
-		//上述的步驟一在if內完成，步驟二在else內完成
-		if(tcount<restrict*2){
-			if(tcount%2==0){
-				rantmp = Math.floor(Math.random() * 2)
-			}
-			switch(rantmp){
-				case 0:
+		if(sellerNum>=buyerNum){
+			restrict = buyerNum;
+		}else{
+			restrict = sellerNum;
+		}
+		// 分配身份的步驟：假設有12人 buyer:5 seller:7 
+		// 1.先分配10個人分別五五買賣 2.再分配兩個seller
+		thisRoom.Users.forEach(function(value,key) {
+			
+			//上述的步驟一在if內完成，步驟二在else內完成
+			if(tcount<restrict*2){
+				if(tcount%2==0){
+					rantmp = Math.floor(Math.random() * 2)
+				}
+				switch(rantmp){
+					case 0:
+						money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+						money = interval * Math.ceil(money/interval)
+						value.role = 'seller' 
+						value.price = money 
+						rantmp=1
+						break;
+					case 1:
+						money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+						money = interval * Math.ceil(money/interval)
+						value.role = 'buyer' 
+						value.price = money
+						rantmp=0
+						break;
+				}
+				tcount++;
+				thisRoom.Users.set(key,value)
+			}else{
+				if(sellerNum>buyerNum){
 					money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
 					money = interval * Math.ceil(money/interval)
 					value.role = 'seller' 
 					value.price = money 
-					rantmp=1
-					break;
-				case 1:
+				}else{
 					money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
 					money = interval * Math.ceil(money/interval)
 					value.role = 'buyer' 
 					value.price = money
 					rantmp=0
-					break;
+				}
+				
+				tcount++;
+				thisRoom.Users.set(key,value)
 			}
-			tcount++;
-			thisRoom.Users.set(key,value)
-		}else{
-			if(sellerNum>buyerNum){
-				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'seller' 
-				value.price = money 
-			}else{
-				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'buyer' 
-				value.price = money
-				rantmp=0
-			}
-			
-			tcount++;
-			thisRoom.Users.set(key,value)
-		}
-	});
-	allRooms.set(req.body.roomNum, thisRoom);
-	res.json({ userData: Array.from(thisRoom.Users)});
-
+		});
+		allRooms.set(req.body.roomNum, thisRoom);
+		res.json({ userData: Array.from(thisRoom.Users)});
+	}
 });
 
 app.post('/chartData',(req,res)=>{
@@ -657,22 +662,31 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('startTime',(req)=>{
-		let tmp = tmpChartData.get(req.roomNum)
-		let chartData = totalChartData.get(req.roomNum);
-		if (chartData == null){
-			chartData = [tmp];
+		if(allRooms.get(req.roomNum).isGaming = true){
+			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
 		}else{
-			chartData.push(tmp)
+			let tmp = tmpChartData.get(req.roomNum)
+			let chartData = totalChartData.get(req.roomNum);
+			if (chartData == null){
+				chartData = [tmp];
+			}else{
+				chartData.push(tmp)
+			}
+			totalChartData.set(req.roomNum,chartData);
+			allRooms.get(req.roomNum).nowRound+=1;
+			allRooms.get(req.roomNum).isGaming = true;
+			io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
+			//io.emit('startTimeResponse', dt);
 		}
-		totalChartData.set(req.roomNum,chartData);
-		allRooms.get(req.roomNum).nowRound+=1;
-		io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
-		//io.emit('startTimeResponse', dt);
 	});
 
 	socket.on('endRound',(req)=>{
-		let msg = 'endRoundMessage'
-		io.sockets.in(req.roomNum).emit('endRoundResponse',msg);
+		if(allRooms.get(req.roomNum).isGaming = false){
+			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
+		}else{
+			allRooms.get(req.roomNum).isGaming = false;
+			io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
+		}
 	});
 
 	//================林育緹部分===================//
