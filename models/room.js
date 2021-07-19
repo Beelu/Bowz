@@ -16,6 +16,8 @@ var roomSchema = new mongoose.Schema({
   roomID: Number,
   roomName: String,
   roundTime: Number,
+  active: Boolean,
+  nowRoomID: Number
 });
 
 module.exports = mongoose.model("room", roomSchema);

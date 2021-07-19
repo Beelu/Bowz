@@ -296,12 +296,14 @@ app.post("/createRoom", (req, res) => {
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
-		roundTime: req.body.roundTime
+		roundTime: req.body.roundTime,
+		active: false,
+		nowRoomID: null
 	}
 
 	room.create(createRoom, (err, newRoom) => {
 		if (err) {
-			res.json({message:err})
+			return res.json({message:err})
 		}
 		res.json({message:"successfully create room."})
 	})
@@ -358,19 +360,26 @@ app.post("/openRoom", (req, res) => {
 	console.log(req.body.roomID)
 	Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
 	room.findById(req.body.roomID, (err, findroom) => {
-		allRooms.set(randomID, {
-			round:findroom.roundInfo,
-			gameType:findroom.gameType,
-			roundTime:findroom.roundTime,
-			roomName: findroom.roomName,
-			Users:Users,
-			nowRound:-1,
-			admin_transc_times:0
-		});
+		if(findroom.active){
+			res.json({message:"room already exist.", pinCode: findroom.nowRoomID});
+		}else{
+			allRooms.set(randomID, {
+				round:findroom.roundInfo,
+				gameType:findroom.gameType,
+				roundTime:findroom.roundTime,
+				roomName: findroom.roomName,
+				Users:Users,
+				nowRound:-1,
+				admin_transc_times:0
+			});
+			findroom.active = true;
+			findroom.nowRoomID = randomID;
+			findroom.save();
+			res.json({message:"new room.", pinCode: randomID });
+		}
 	});
 
-	console.log(allRooms);
-	res.json({ pinCode: randomID });
+	//console.log(allRooms);
 });
 
 //====================startGame=======================
@@ -507,6 +516,19 @@ app.post("/changeSingleMoney", (req,res) => {
 })
 
 //===========遊戲後儲存歷史資料===============
+app.post('/closeRoom', (req, res) => {
+	room.findById(req.body.roomID, (err, findroom) => {
+		if(err){
+			res.json({message:"something got wrong."})
+		}else{
+			findroom.active = false;
+			findroom.nowRoomID = null;
+			findroom.save();
+			res.json({message:"room closed."})
+		}
+	});
+});
+
 app.post('/saveRecord', (req, res)=>{
 	var saveRoom = allRooms.get(req.body.roomNum);
 	var saveRecord = {
@@ -914,6 +936,9 @@ server.listen(3000, process.env.IP, function () {
 			roomName:房間名稱，型態string
 			Users: 所有使用者，型態map
 			nowRound: 現在第幾回合，型態int
+			//以下資料庫才有
+			active: false,
+			nowRoomID: null
 		}
 
 		record{
