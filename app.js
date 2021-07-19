@@ -50,7 +50,6 @@ allRooms.set("9487",{
 		saleMax: 100,
 		buyMin: 20,
 		buyMax: 120,
-		interval: 10,
 		item: "apple",
 		record:[{seller:"asdasd", buyer:"qweqwe", price:120}, {seller:"zxczxc", buyer:"fghfgh", price:130}]},
 	{
@@ -60,12 +59,13 @@ allRooms.set("9487",{
 		saleMax: 100,
 		buyMin: 20,
 		buyMax: 120,
-		interval: 10,
 		item: "yanshou",
 		record:[{seller:"qscq", buyer:"zsees", price:100}, {seller:"zxcc", buyer:"hfgh", price:200}]}
 	],
+	isGaming:false,
 	gameType: 1,
 	roundTime:120,
+	interval: 10,
 	roomName:"保志的測試",
 	Users:testusers,
 	nowRound:-1,
@@ -276,7 +276,7 @@ app.post("/reset/:token", (req, res) => {
 app.post("/enterRoom", (req, res) => {
 	if (allRooms.get(req.body.roomNum)) {
 		thisRoom = allRooms.get(req.body.roomNum);
-		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false })		//設定進入使用者的資料
+		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
 		thisRoom.total = thisRoom.Users.size;
 		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
 
@@ -384,75 +384,89 @@ app.post("/openRoom", (req, res) => {
 
 //====================startGame=======================
 
-app.post("/assignRole", (req, res) => {
+app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let roundNum = req.body.roundNum;
 	let total = thisRoom.Users.size; 
+	let interval = thisRoom.interval;
 	let saleMax = thisRoom.round[roundNum].saleMax;
 	let buyMax = thisRoom.round[roundNum].buyMax;
 	let saleMin = thisRoom.round[roundNum].saleMin;
 	let buyMin = thisRoom.round[roundNum].buyMin;
-	let interval = thisRoom.round[roundNum].interval;
 	let ratio;
-	let scount = 0;
-	let bcount = 0;
-	let tcount = 0;
-	let rantmp = 0;
+	let restrict;//紀錄買家賣家何者較少
+	let tcount = 0; //計已分配的總數量
+	let rantmp = 0; //用來隨機分配的參數
 
-	if(thisRoom.round[roundNum].ratio == null){
-		do{
-			ratio = randomNormal({mean: 0.5})
-		}while( ratio < 0.3 || ratio > 0.7)
+	if(thisRoom.isGamimg == true){
+		res.json({msg:'error'})
 	}else{
-		ratio = thisRoom.round[roundNum].ratio;
-	}
-
-	let sellerNum = Math.round(ratio * total)
-
-	thisRoom.Users.forEach(function(value,key) {
-		if(tcount%2==0){
-			rantmp = Math.floor(Math.random() * 2)
-		}
-	
-		if(sellerNum>total/2){
-			if(scount >= sellerNum/2 && sellerNum>scount){
-				rantmp=0;
-			}
-		}else if(sellerNum<total/2){
-			if( bcount <= (total-sellerNum)/2 && total-sellerNum>bcount){
-				rantmp=1;
-			}
-		}else{}
-
-		switch(rantmp){
-			case 0:
-				money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'seller' 
-				value.price = money 
-				rantmp=1
-				scount++;
-				break;
-			case 1:
-				money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-				money = interval * Math.ceil(money/interval)
-				value.role = 'buyer' 
-				value.price = money
-				rantmp=0
-				bcount++
-				break;
+		//設定ratio
+		if(thisRoom.round[roundNum].ratio == null){
+			do{
+				ratio = randomNormal({mean: 0.5})
+			}while( ratio < 0.3 || ratio > 0.7)
+		}else{
+			ratio = thisRoom.round[roundNum].ratio;
 		}
 
-		tcount++;
-		thisRoom.Users.set(key,value)
+		let sellerNum = Math.round(ratio * total)
+		let buyerNum = total-sellerNum
+
+		if(sellerNum>=buyerNum){
+			restrict = buyerNum;
+		}else{
+			restrict = sellerNum;
+		}
+		// 分配身份的步驟：假設有12人 buyer:5 seller:7 
+		// 1.先分配10個人分別五五買賣 2.再分配兩個seller
+		thisRoom.Users.forEach(function(value,key) {
+			
+			//上述的步驟一在if內完成，步驟二在else內完成
+			if(tcount<restrict*2){
+				if(tcount%2==0){
+					rantmp = Math.floor(Math.random() * 2)
+				}
+				switch(rantmp){
+					case 0:
+						money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+						money = interval * Math.ceil(money/interval)
+						value.role = 'seller' 
+						value.price = money 
+						rantmp=1
+						break;
+					case 1:
+						money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+						money = interval * Math.ceil(money/interval)
+						value.role = 'buyer' 
+						value.price = money
+						rantmp=0
+						break;
+				}
+				tcount++;
+				thisRoom.Users.set(key,value)
+			}else{
+				if(sellerNum>buyerNum){
+					money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+					money = interval * Math.ceil(money/interval)
+					value.role = 'seller' 
+					value.price = money 
+				}else{
+					money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+					money = interval * Math.ceil(money/interval)
+					value.role = 'buyer' 
+					value.price = money
+					rantmp=0
+				}
+				
+				tcount++;
+				thisRoom.Users.set(key,value)
+			}
 		});
-
-	allRooms.set(req.body.roomNum, thisRoom);	
-	userData = thisRoom.Users
-
-	res.json({ userData: Array.from(userData)});
-
+		allRooms.set(req.body.roomNum, thisRoom);
+		res.json({ userData: Array.from(thisRoom.Users)});
+	}
 });
 
 app.post('/chartData',(req,res)=>{
@@ -478,7 +492,7 @@ app.post('/chartData',(req,res)=>{
 		p++
 	}
 
-	tmpChartData.set(req.body.roomNum ,[{buyer:buyerMoneyData,seller:sellerMoneyData,point:p}])
+	tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
 	console.log(tmpChartData)
 	res.json({chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
 })
@@ -496,24 +510,67 @@ app.post("/changeSingleMoney", (req,res) => {
 	let chartData = tmpChartData.get(req.body.roomNum);
 
 	if (role == "seller"){
-		oldMoney = chartData[0].seller[index]
-		chartData[0].seller[index] = money
-		chartData[0].seller.sort((a, b) => a - b);
+		oldMoney = chartData.seller[index]
+		chartData.seller[index] = money
+		chartData.seller.sort((a, b) => a - b);
 	}
 	else {
-		oldMoney = chartData[0].buyer[index]
-		chartData[0].buyer[index] = money
-		chartData[0].buyer.sort((a, b) => b - a);
+		oldMoney = chartData.buyer[index]
+		chartData.buyer[index] = money
+		chartData.buyer.sort((a, b) => b - a);
 	}
 
+	//改掉 Users的資料
+	let count =0;
 	thisRoom.Users.forEach(function(value,key) {
-		if (value.price == oldMoney && value.role == role){
-			value.price = money
+		if (count == 0){
+			if (value.price == oldMoney && value.role == role){
+				value.price = money
+				count+=1
+			}
 		}
-	})
-	res.json({ chartData: chartData[0]});
+	});
+	allRooms.set(req.body.roomNum, thisRoom);
+	tmpChartData.set(req.body.roomNum,chartData);
+	res.json({ chartData: chartData});
 	
 })
+
+
+app.post("/changeRoleMoney", (req,res) => {
+	let thisRoom = allRooms.get(req.body.roomNum);
+	let role = req.body.role
+	let adjustPrice =  parseInt(req.body.adjustPrice)
+	let buyerMoneyData = [];
+	let sellerMoneyData = [];
+
+	//把User裡屬於該role的金額依序調整
+	thisRoom.Users.forEach(function(value, key) {
+		if(value.role==role){
+			value.price += adjustPrice 
+		}
+		if(value.role=="buyer"){
+			buyerMoneyData.push(value.price);
+		}else{
+			sellerMoneyData.push(value.price);
+		}
+	  });
+
+	//利用buyerMoneyData和sellerMoneyData做成chartData
+	buyerMoneyData.sort((a, b) => b - a);
+	sellerMoneyData.sort((a, b) => a - b);
+
+	let p = 0
+	while (buyerMoneyData[p]-sellerMoneyData[p]>0){
+		p++
+	}
+
+	tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
+	allRooms.set(req.body.roomNum, thisRoom);	
+	res.json({ chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+	
+})
+
 
 //===========遊戲後儲存歷史資料===============
 app.post('/closeRoom', (req, res) => {
@@ -626,19 +683,33 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('startTime',(req)=>{
-		let tmp = tmpChartData.get(req.roomNum)
-		let chartData = totalChartData.get(req.roomNum);
-		if (chartData == null){
-			chartData = [tmp];
+		if(allRooms.get(req.roomNum).isGaming = true){
+			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
 		}else{
-			chartData.push(tmp)
+			let tmp = tmpChartData.get(req.roomNum)
+			let chartData = totalChartData.get(req.roomNum);
+			if (chartData == null){
+				chartData = [tmp];
+			}else{
+				chartData.push(tmp)
+			}
+			totalChartData.set(req.roomNum,chartData);
+			allRooms.get(req.roomNum).nowRound+=1;
+			allRooms.get(req.roomNum).isGaming = true;
+			io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
+			//io.emit('startTimeResponse', dt);
 		}
-		totalChartData.set(req.roomNum,chartData);
-		req.nowRound += 1 ;
-		let dt = new Date();
-		io.sockets.in(req.roomNum).emit('startTimeResponse', dt);
-		//io.emit('startTimeResponse', dt);
 	});
+
+	socket.on('endRound',(req)=>{
+		if(allRooms.get(req.roomNum).isGaming = false){
+			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
+		}else{
+			allRooms.get(req.roomNum).isGaming = false;
+			io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
+		}
+	});
+
 	//================林育緹部分===================//
 	//開始遊戲的發放身份與金錢
 	// socket.on('startGame', (data) => {
@@ -758,7 +829,7 @@ io.on('connection', (socket) => {
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
-			socket.emit('testsocket',  {s:s_id});
+			io.to(s_id).emit('testsocket',  {s:s_id});
 	});
 
   	  
@@ -795,11 +866,11 @@ io.on('connection', (socket) => {
 		if(chek_point==1){
 			receiver.money += money;
 			payer.money -= money;
-                        thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+                        thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
                         socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
                 }
 
-                socket.broadcast.to(receiverSocket).emit('transcResp', chek_point)
+                io.to(receiverSocket).emit('transcResp', chek_point)
         });
 
         //admin發送金錢
@@ -811,27 +882,33 @@ io.on('connection', (socket) => {
                 var money = data.money;//交易金額
 
                 var payer = data.payer_id//獲取付款者ID
+		var payer_money = allUsers.get(payer).money
                 var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
                 var receiverSocket = receiver.socketID;
+		
                 var chek_point = 1;
 		var used_times  = thisRoom.admin_transc_times;
                 var limit_times = data.limit_times;
-
+		
+		if(payer_money==0){
+			allUsers.get(payer).money = 99999;
+		}
+		
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
-                                thisRoom.round[thisRound].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: payer, price: money});
+                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
                         else{
                                 chek_point = -1;
-                                socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
 			}
                 }
                 catch(e){
                         chek_point = 0;
-                        socket.broadcast.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                        io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 }
                 thisRoom.admin_transc_times = used_times;
         });
