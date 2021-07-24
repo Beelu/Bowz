@@ -281,7 +281,7 @@ app.post("/enterRoom", (req, res) => {
 		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
 
 		console.log(allRooms.get(req.body.roomNum));
-		res.json({ roomDetail: allRooms.get(req.body.roomNum), allUsers: [...thisRoom.Users] });
+		res.json({ roomDetail: thisRoom, allUsers: [...thisRoom.Users] });
 	} else {
 		res.status(500).json({ message: "room doesn't exist." });
 	}
@@ -365,6 +365,7 @@ app.post("/openRoom", (req, res) => {
 		}else{
 			allRooms.set(randomID, {
 				round:findroom.roundInfo,
+				interval: findroom.interval,
 				gameType:findroom.gameType,
 				roundTime:findroom.roundTime,
 				roomName: findroom.roomName,
@@ -381,6 +382,16 @@ app.post("/openRoom", (req, res) => {
 
 	//console.log(allRooms);
 });
+
+//取得房間資訊
+app.post("/getRoom", (req, res) => {
+	findRoom = allRooms.get(req.body.roomNum);
+	if(findRoom){
+		res.json({ roomDetail: findRoom, allUsers: [...findRoom.Users] });
+	}else{
+		res.json({message:"can't find room", roomNum:req.body.roomNum})
+	}
+})
 
 //====================startGame=======================
 
