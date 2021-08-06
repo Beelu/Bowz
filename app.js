@@ -468,7 +468,7 @@ app.post("/shuffle", (req, res) => {
 			}
 		});
 		allRooms.set(req.body.roomNum, thisRoom);
-		res.json({ userData: Array.from(thisRoom.Users)});
+		res.json({ userData: Array.from(thisRoom.Users), bNum:buyerNum,sNum:sellerNum,allNum:total,interval:interval,lastMoney:money});
 	}
 });
 
