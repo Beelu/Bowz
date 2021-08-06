@@ -399,7 +399,7 @@ app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let roundNum = req.body.roundNum;
-	let total = thisRoom.Users.size; 
+	let total = thisRoom.total; 
 	let interval = thisRoom.interval;
 	let saleMax = thisRoom.round[roundNum].saleMax;
 	let buyMax = thisRoom.round[roundNum].buyMax;
@@ -468,7 +468,7 @@ app.post("/shuffle", (req, res) => {
 			}
 		});
 		allRooms.set(req.body.roomNum, thisRoom);
-		res.json({ userData: Array.from(thisRoom.Users), bNum:buyerNum,sNum:sellerNum,allNum:total,interval:interval,lastMoney:money});
+		res.json({ userData: Array.from(thisRoom.Users),roomDetail:thisRoom});
 	}
 });
 
