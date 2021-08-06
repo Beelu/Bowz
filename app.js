@@ -407,7 +407,7 @@ app.post("/shuffle", (req, res) => {
 	let buyMin = thisRoom.round[roundNum].buyMin;
 	let ratio =  thisRoom.round[roundNum].ratio/100;
 	let total = thisRoom.total; 
-	let interval = thisRoom.interval;
+	let interval = req.body.interval;
 	let restrict;//紀錄買家賣家何者較少
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
