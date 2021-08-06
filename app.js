@@ -405,7 +405,7 @@ app.post("/shuffle", (req, res) => {
 	let buyMax = thisRoom.round[roundNum].buyMax;
 	let saleMin = thisRoom.round[roundNum].saleMin;
 	let buyMin = thisRoom.round[roundNum].buyMin;
-	let ratio;
+	let ratio =  thisRoom.round[roundNum].ratio/100;
 	let restrict;//紀錄買家賣家何者較少
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
@@ -413,14 +413,6 @@ app.post("/shuffle", (req, res) => {
 	if(thisRoom.isGamimg == true){
 		res.json({msg:'error'})
 	}else{
-		//設定ratio
-		if(thisRoom.round[roundNum].ratio == null){
-			do{
-				ratio = randomNormal({mean: 0.5})
-			}while( ratio < 0.3 || ratio > 0.7)
-		}else{
-			ratio = thisRoom.round[roundNum].ratio;
-		}
 
 		let sellerNum = Math.round(ratio * total)
 		let buyerNum = total-sellerNum
