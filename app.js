@@ -394,9 +394,6 @@ app.post("/getRoom", (req, res) => {
 })
 
 //====================startGame=======================
-app.post("/testRoom",(req,res)=>{
-	res.json({data:allRooms})
-});
 app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
@@ -407,7 +404,7 @@ app.post("/shuffle", (req, res) => {
 	let buyMin = thisRoom.round[roundNum].buyMin;
 	let ratio =  thisRoom.round[roundNum].ratio/100;
 	let total = thisRoom.total; 
-	let interval = req.body.interval;
+	let interval = thisRoom.interval;
 	let restrict;//紀錄買家賣家何者較少
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
