@@ -394,7 +394,9 @@ app.post("/getRoom", (req, res) => {
 })
 
 //====================startGame=======================
-
+app.post("/testRoom",(req,res)=>{
+	res.json({data:allRooms})
+});
 app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
