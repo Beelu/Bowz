@@ -14,7 +14,7 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-	server = require("http").Server(app),
+	server = require("https").Server(app),
 	https = require('https'),
 	io = require("socket.io")(server),
 	path = require("path");
@@ -77,10 +77,11 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
 
 //https
-// var privateKey  = fs.readFileSync(__dirname + '/ssl/private.key');
-// var certificate = fs.readFileSync(__dirname + '/ssl/certificate.crt');
-// var credentials = { key: privateKey, cert: certificate};
-// var httpsServer = https.createServer(credentials ,app);
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
+};
 
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
@@ -1001,8 +1002,11 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-server.listen(3000, process.env.IP, function () {
-	console.log("Server Start!");
+// server.listen(3000, process.env.IP, function () {
+// 	console.log("Server Start!");
+// });
+https.createServer(options, app).listen(3000, function() {
+    console.log('Express https server listening on port ' + 3000);
 });
 
 /*
