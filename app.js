@@ -395,18 +395,17 @@ app.post("/getRoom", (req, res) => {
 })
 
 //====================startGame=======================
-
 app.post("/shuffle", (req, res) => {
 	
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let roundNum = req.body.roundNum;
-	let total = thisRoom.Users.size; 
-	let interval = thisRoom.interval;
 	let saleMax = thisRoom.round[roundNum].saleMax;
 	let buyMax = thisRoom.round[roundNum].buyMax;
 	let saleMin = thisRoom.round[roundNum].saleMin;
 	let buyMin = thisRoom.round[roundNum].buyMin;
-	let ratio;
+	let ratio =  thisRoom.round[roundNum].ratio/100;
+	let total = thisRoom.total; 
+	let interval = thisRoom.interval;
 	let restrict;//紀錄買家賣家何者較少
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
@@ -414,14 +413,6 @@ app.post("/shuffle", (req, res) => {
 	if(thisRoom.isGamimg == true){
 		res.json({msg:'error'})
 	}else{
-		//設定ratio
-		if(thisRoom.round[roundNum].ratio == null){
-			do{
-				ratio = randomNormal({mean: 0.5})
-			}while( ratio < 0.3 || ratio > 0.7)
-		}else{
-			ratio = thisRoom.round[roundNum].ratio;
-		}
 
 		let sellerNum = Math.round(ratio * total)
 		let buyerNum = total-sellerNum
@@ -477,7 +468,7 @@ app.post("/shuffle", (req, res) => {
 			}
 		});
 		allRooms.set(req.body.roomNum, thisRoom);
-		res.json({ userData: Array.from(thisRoom.Users)});
+		res.json({ userData: Array.from(thisRoom.Users),roomDetail:thisRoom});
 	}
 });
 
@@ -551,19 +542,18 @@ app.post("/changeSingleMoney", (req,res) => {
 
 app.post("/changeRoleMoney", (req,res) => {
 	let thisRoom = allRooms.get(req.body.roomNum);
-	let role = req.body.role
-	let adjustPrice =  parseInt(req.body.adjustPrice)
+	let bPrice =  parseInt(req.body.bAdjustPrice);
+	let sPrice =  parseInt(req.body.sAdjustPrice);
 	let buyerMoneyData = [];
 	let sellerMoneyData = [];
 
 	//把User裡屬於該role的金額依序調整
 	thisRoom.Users.forEach(function(value, key) {
-		if(value.role==role){
-			value.price += adjustPrice 
-		}
 		if(value.role=="buyer"){
+			value.price += bPrice 
 			buyerMoneyData.push(value.price);
 		}else{
+			value.price += sPrice
 			sellerMoneyData.push(value.price);
 		}
 	  });
@@ -695,7 +685,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('startTime',(req)=>{
-		if(allRooms.get(req.roomNum).isGaming = true){
+		if(allRooms.get(req.roomNum).isGaming == true){
 			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
 		}else{
 			let tmp = tmpChartData.get(req.roomNum)
@@ -714,7 +704,7 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('endRound',(req)=>{
-		if(allRooms.get(req.roomNum).isGaming = false){
+		if(allRooms.get(req.roomNum).isGaming == false){
 			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
 		}else{
 			allRooms.get(req.roomNum).isGaming = false;
