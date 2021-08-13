@@ -78,20 +78,20 @@ app.use(cors());
 app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 
 //https
-// var options = {
-// 	key: fs.readFileSync('./server-key.pem'),
-// 	ca: [fs.readFileSync('./cert.pem')],
-// 	cert: fs.readFileSync('./server-cert.pem')
-// };
-// Certificate
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
-const credentials = {
-	key: privateKey,
-	cert: certificate,
-	ca: ca
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
 };
+// Certificate
+// const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/cert.pem', 'utf8');
+// const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
+// const credentials = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: ca
+// };
 
 //資料庫初始設置
 var url = process.env.databaseURL || "mongodb://localhost/project";
@@ -1005,13 +1005,13 @@ io.on('connection', (socket) => {
 // server.listen(3000, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
-// https.createServer(options, app).listen(3000, function() {
-//     console.log('Express https server listening on port ' + 3000);
-// });
-const httpsServer = https.createServer(credentials, app);
-httpsServer.listen(3000, () => {
-	console.log('HTTPS Server running on port 443');
+https.createServer(options, app).listen(3000, function() {
+    console.log('Express https server listening on port ' + 3000);
 });
+// const httpsServer = https.createServer(credentials, app);
+// httpsServer.listen(3000, () => {
+// 	console.log('HTTPS Server running on port 443');
+// });
 
 /*
 房間暫存參數(Map):
