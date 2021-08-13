@@ -1007,10 +1007,10 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-server.listen(3000, process.env.IP, function () {
+server.listen(3333, process.env.IP, function () {
 	console.log("Server Start!");
 });
-https.createServer(options, app).listen(4000);
+https.createServer(options, app).listen(4444);
 
 /*
 房間暫存參數(Map):
