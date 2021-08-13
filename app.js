@@ -75,6 +75,7 @@ allRooms.set("9487",{
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
+app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 
 //https
 // var options = {
