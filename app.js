@@ -90,11 +90,12 @@ app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 // };
 // Certificate
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/fullchain.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/chain.pem', 'utf8');
 const options = {
 	key: privateKey,
 	cert: certificate,
-	ca: [fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem')]
+	//ca: ca
 };
 
 //資料庫初始設置
@@ -1009,9 +1010,7 @@ io.on('connection', (socket) => {
 // server.listen(3000, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
-https.createServer(options, app).listen(8443, function() {
-    console.log('Express https server listening on port ' + 3000);
-});
+https.createServer(options, app).listen(3000);
 
 /*
 房間暫存參數(Map):
