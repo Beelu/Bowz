@@ -1013,7 +1013,7 @@ io.on('connection', (socket) => {
 //     console.log('Express https server listening on port ' + 3000);
 // });
 const httpsServer = https.createServer(credentials, app);
-httpsServer.listen(3000, () => {
+httpsServer.listen(3210, () => {
 	console.log('HTTPS Server running on port 443');
 });
 
