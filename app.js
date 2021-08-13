@@ -16,7 +16,12 @@ var express = require("express"),
 	fs = require("fs"),
 	server = require("https").Server(app),
 	https = require('https'),
-	io = require("socket.io")(server),
+	io = require("socket.io")(server, {
+		cors:{
+			origin:"*",
+			method:["GET", "POST"],
+		},
+	}),
 	path = require("path");
 	middleware = require("./middleware"),
 	user = require("./models/user"),
