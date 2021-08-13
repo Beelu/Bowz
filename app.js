@@ -77,10 +77,19 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
 
 //https
-var options = {
-	key: fs.readFileSync('./server-key.pem'),
-	ca: [fs.readFileSync('./cert.pem')],
-	cert: fs.readFileSync('./server-cert.pem')
+// var options = {
+// 	key: fs.readFileSync('./server-key.pem'),
+// 	ca: [fs.readFileSync('./cert.pem')],
+// 	cert: fs.readFileSync('./server-cert.pem')
+// };
+// Certificate
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/chain.pem', 'utf8');
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+	ca: ca
 };
 
 //資料庫初始設置
@@ -995,8 +1004,12 @@ io.on('connection', (socket) => {
 // server.listen(3000, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
-https.createServer(options, app).listen(3000, function() {
-    console.log('Express https server listening on port ' + 3000);
+// https.createServer(options, app).listen(3000, function() {
+//     console.log('Express https server listening on port ' + 3000);
+// });
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(3000, () => {
+	console.log('HTTPS Server running on port 443');
 });
 
 /*
