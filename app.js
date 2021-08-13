@@ -89,8 +89,8 @@ app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 // 	cert: fs.readFileSync('./server-cert.pem')
 // };
 // Certificate
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/fullchain.pem', 'utf8');
+const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
 // const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
 const options = {
 	key: privateKey,
