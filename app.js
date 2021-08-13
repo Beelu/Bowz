@@ -14,7 +14,7 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-	server = require("https").Server(app),
+	server = require("http").Server(app),
 	https = require('https'),
 	io = require("socket.io")(server),
 	path = require("path");
@@ -1002,12 +1002,12 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-// server.listen(3000, process.env.IP, function () {
-// 	console.log("Server Start!");
-// });
-https.createServer(options, app).listen(3000, function() {
-    console.log('Express https server listening on port ' + 3000);
+server.listen(3000, process.env.IP, function () {
+	console.log("Server Start!");
 });
+// https.createServer(options, app).listen(3000, function() {
+//     console.log('Express https server listening on port ' + 3000);
+// });
 // const httpsServer = https.createServer(credentials, app);
 // httpsServer.listen(3000, () => {
 // 	console.log('HTTPS Server running on port 443');
