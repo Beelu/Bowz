@@ -91,11 +91,10 @@ app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 // Certificate
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
 const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
 const credentials = {
 	key: privateKey,
 	cert: certificate,
-	ca: ca
+	ca: certificate
 };
 
 //資料庫初始設置
