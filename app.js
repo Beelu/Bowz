@@ -94,7 +94,7 @@ const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.t
 const options = {
 	key: privateKey,
 	cert: certificate,
-	ca: certificate
+	ca: [fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem')]
 };
 
 //資料庫初始設置
