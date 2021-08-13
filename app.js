@@ -14,7 +14,7 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-	server = require("https").Server(app),
+	server = require("http").Server(app),
 	https = require('https'),
 	io = require("socket.io")(server, {
 		cors:{
@@ -1007,10 +1007,10 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-// server.listen(3000, process.env.IP, function () {
-// 	console.log("Server Start!");
-// });
-https.createServer(options, app).listen(3000);
+server.listen(3000, process.env.IP, function () {
+	console.log("Server Start!");
+});
+https.createServer(options, app).listen(4000);
 
 /*
 房間暫存參數(Map):
