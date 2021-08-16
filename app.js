@@ -1,5 +1,6 @@
 const { countReset } = require('console');
 const { Socket } = require('dgram');
+const { connect } = require('http2');
 const {MongoClient} = require('mongodb');
 
 if (process.env.NODE_ENV !== "production") {
@@ -16,12 +17,7 @@ var express = require("express"),
 	fs = require("fs"),
 	server = require("http").Server(app),
 	https = require('https'),
-	io = require("socket.io")(server, {
-		cors:{
-			origin:"*",
-			method:["GET", "POST"],
-		},
-	}),
+	io = require("socket.io")(server),
 	path = require("path");
 	middleware = require("./middleware"),
 	user = require("./models/user"),
@@ -33,6 +29,8 @@ var express = require("express"),
 	crypto = require("crypto"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
+	cookie = require("cookie-parser");
+
 
 //房間所需要之暫存變數
 var allRooms = new Map();
@@ -79,7 +77,8 @@ allRooms.set("9487",{
 //初始設置
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({credentials: true}));
+app.use(cookie());
 app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 
 //https
@@ -88,7 +87,8 @@ app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 // 	ca: [fs.readFileSync('./cert.pem')],
 // 	cert: fs.readFileSync('./server-cert.pem')
 // };
-// Certificate
+
+//Certificate
 const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
 const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
 // const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
@@ -142,9 +142,9 @@ app.get("/login", function (req, res) {
 
 //登入實作
 app.post("/login", function (req, res, next) {
-	passport.authenticate('local', function (err, user) {
+	passport.authenticate('local', function (err, user, info) {
 		if (err) { return next(err); }
-		if (!user) { return res.status(500).json({ message: 'user not exist!', user: user }); }
+		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
 		req.logIn(user, function (err) {
 			if (err) { return next(err); }
 			res.json({ message: 'login success!', user: user});
@@ -1007,7 +1007,7 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-// server.listen(3333, process.env.IP, function () {
+// server.listen(3000, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
 https.createServer(options, app).listen(3000);
