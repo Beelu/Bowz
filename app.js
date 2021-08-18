@@ -15,13 +15,8 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-<<<<<<< HEAD
 	server = require("http").Server(app),
 	https = require('https'),
-=======
-    	https = require('https'),
-	server = require("https").Server(app),	
->>>>>>> eb557dba38f55e01d2250c478f2666b5dc7ae20b
 	io = require("socket.io")(server),
 	path = require("path");
 	middleware = require("./middleware"),
