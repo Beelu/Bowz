@@ -15,7 +15,7 @@ var express = require("express"),
 	passportLocal = require("passport-local"),
 	passportLocalMongoose = require("passport-local-mongoose"),
 	fs = require("fs"),
-	server = require("https").Server(app),
+	server = require("http").Server(app),
 	https = require('https'),
 	io = require("socket.io")(server),
 	path = require("path");
@@ -130,6 +130,11 @@ app.get("/", function (req, res) {
 	res.render("index");
 });
 
+//轉址
+app.get("/red", function(req, res){
+	res.json({ message: 'login success!', user: user});
+});
+
 //註冊頁面
 app.get("/register", function (req, res) {
 	res.render("register");
@@ -147,7 +152,8 @@ app.post("/login", function (req, res, next) {
 		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
 		req.logIn(user, function (err) {
 			if (err) { return next(err); }
-			res.json({ message: 'login success!', user: user});
+			res.redirect("/red");
+			//res.json({ message: 'login success!', user: user});
 		});
 	})(req, res, next);
 });
