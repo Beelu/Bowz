@@ -29,7 +29,7 @@ var express = require("express"),
 	crypto = require("crypto"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
-	cookie = require("cookie-parser");
+	jwt = require("jsonwebtoken")
 
 
 //房間所需要之暫存變數
@@ -78,8 +78,6 @@ allRooms.set("9487",{
 app.set("view engine", "ejs");
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
-app.use(cookie());
-app.use(express.static(__dirname, { dotfiles: 'allow' } ));
 
 //https
 // var options = {
@@ -110,8 +108,8 @@ app.use(require("express-session")({
 	saveUninitialized: false,
 	cookie: {
 		httpOnly: true,
-		expires: Date.now() + 1000 * 60 * 60 * 24,
-		maxAge: 1000 * 60 * 60 * 24
+		expires: Date.now() + 1,
+		maxAge: 1
 	}
 }));
 app.use(passport.initialize());
@@ -119,10 +117,7 @@ app.use(passport.session());
 passport.use(new passportLocal(user.authenticate()));
 passport.serializeUser(user.serializeUser());
 passport.deserializeUser(user.deserializeUser());
-app.use(function (req, res, next) {
-	res.locals.currentuser = req.user;
-	next();
-});
+
 
 //==================================================================//
 //主頁面
@@ -147,8 +142,8 @@ app.post("/login", function (req, res, next) {
 		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
 		req.logIn(user, function (err) {
 			if (err) { return next(err); }
-			res.redirect("https://lbdgame.mgt.ncu.edu.tw/");
-			//res.json({ message: 'login success!', user: user});
+			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '1h' })
+			res.json({ message: 'login success!', user: user, jwt: token});
 		});
 	})(req, res, next);
 });
@@ -327,7 +322,7 @@ app.post("/createRoom", (req, res) => {
 });
 
 //編輯房間
-app.post("/editRoom/:id", (req, res) => {
+app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 	var editRoom = {
 		email: req.body.email,
 		interval: req.body.interval,
