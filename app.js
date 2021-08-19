@@ -87,17 +87,16 @@ app.use(cors({credentials: true}));
 // };
 
 //Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-// const ca = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/chain.pem', 'utf8');
-const options = {
-	key: privateKey,
-	cert: certificate,
-	ca: certificate
-};
+// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+// const options = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: certificate
+// };
 
 //資料庫初始設置
-var url = process.env.databaseURL || "mongodb://localhost/project";
+var url = process.env.databaseURL //|| "mongodb://localhost/project";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 const client = new MongoClient(url);
 
@@ -1003,10 +1002,10 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-// server.listen(3000, process.env.IP, function () {
-// 	console.log("Server Start!");
-// });
-https.createServer(options, app).listen(3000);
+server.listen(3000, process.env.IP, function () {
+	console.log("Server Start!");
+});
+// https.createServer(options, app).listen(3000);
 
 /*
 房間暫存參數(Map):
