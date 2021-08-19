@@ -86,14 +86,14 @@ app.use(cors({credentials: true}));
 // 	cert: fs.readFileSync('./server-cert.pem')
 // };
 
-//Certificate
-// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-// const options = {
-// 	key: privateKey,
-// 	cert: certificate,
-// 	ca: certificate
-// };
+// Certificate
+const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+const options = {
+	key: privateKey,
+	cert: certificate,
+	ca: certificate
+};
 
 //資料庫初始設置
 var url = process.env.databaseURL //|| "mongodb://localhost/project";
@@ -1002,10 +1002,10 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-server.listen(3000, process.env.IP, function () {
-	console.log("Server Start!");
-});
-// https.createServer(options, app).listen(3000);
+// server.listen(3000, process.env.IP, function () {
+// 	console.log("Server Start!");
+// });
+https.createServer(options, app).listen(3000);
 
 /*
 房間暫存參數(Map):
