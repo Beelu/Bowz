@@ -87,8 +87,8 @@ app.use(cors({credentials: true}));
 // };
 
 // Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/lbdgame.mgt.ncu.edu.tw/fullchain.pem', 'utf8');
 const options = {
 	key: privateKey,
 	cert: certificate,
