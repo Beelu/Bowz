@@ -17,7 +17,7 @@ var express = require("express"),
 	fs = require("fs"),
 	server = require("http").Server(app),
 	https = require('https'),
-	io = require("socket.io")(server),
+	//io = require("socket.io")(server),
 	path = require("path");
 	middleware = require("./middleware"),
 	user = require("./models/user"),
@@ -94,6 +94,8 @@ const options = {
 	cert: certificate,
 	ca: certificate
 };
+var httpsServer = https.createServer(options, app)
+var io = require("socket.io")(httpsServer)
 
 //資料庫初始設置
 var url = process.env.databaseURL //|| "mongodb://localhost/project";
@@ -1005,7 +1007,9 @@ io.on('connection', (socket) => {
 // server.listen(3000, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
-https.createServer(options, app).listen(3000);
+httpsServer.listen(3000, process.env.IP, function () {
+	console.log("Server Start!");
+});
 
 /*
 房間暫存參數(Map):
