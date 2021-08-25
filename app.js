@@ -1019,7 +1019,7 @@ io.on('connection', (socket) => {
 			};
 			
 			//傳送多回合交易紀錄
-			socket.emit('getmultiRecordsResponse', {recds});
+			socket.emit('getmultiRecordsResponse', recds.json);
 		}
 		catch(e){
 			socket.emit('getmultiRecordsResponse', {s:"error"});
