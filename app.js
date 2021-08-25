@@ -1018,7 +1018,7 @@ io.on('connection', (socket) => {
 		};
 		 
 		//傳送多回合交易紀錄
-		socket.emit('getmultiRecordsResponse',{Records});
+		socket.emit('getmultiRecordsResponse',{recds});
 		
 	});
 	
