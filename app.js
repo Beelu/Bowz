@@ -1014,7 +1014,7 @@ io.on('connection', (socket) => {
 	
 		for(i=0; i<Rounds.length; i++){
 			var  rec = thisRoom.round[Rounds[i]].record;
-			Records.set(Rounds[i], rec);
+			recds.set(Rounds[i], rec);
 		};
 		 
 		//傳送多回合交易紀錄
