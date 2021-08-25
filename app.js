@@ -1022,7 +1022,7 @@ io.on('connection', (socket) => {
 			recds.set(rods[0], 123);
 			
 			//傳送多回合交易紀錄
-			socket.emit('getmultiRecordsResponse', rods[0]);
+			socket.emit('getmultiRecordsResponse', recds);
 		}
 		catch(e){
 			socket.emit('getmultiRecordsResponse', {s:"error"});
