@@ -1011,7 +1011,6 @@ io.on('connection', (socket) => {
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var rods = data.round;
 			var recds =  [];
-
 			
 			for(i=0; i<rods.length; i++){
 				var  rec = thisRoom.round[Number(rods[i]-1)].record;
