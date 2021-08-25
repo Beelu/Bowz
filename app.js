@@ -1012,10 +1012,13 @@ io.on('connection', (socket) => {
 			var rods = data.rounds;
 			var recds =  new Map();
 
+			/*
 			for(i=0; i<rods.length; i++){
 				var  rec = thisRoom.round[Number(rods[i]-1)].record;
 				recds.set(rods[i], rec);
 			};
+			*/
+			
 			//傳送多回合交易紀錄
 			socket.emit('getmultiRecordsResponse', recds);
 		}
