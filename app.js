@@ -1010,16 +1010,16 @@ io.on('connection', (socket) => {
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var rods = data.round;
-			var recds =  new Map();
+			var recds =  [];
 
 			
 			for(i=0; i<rods.length; i++){
 				var  rec = thisRoom.round[Number(rods[i]-1)].record;
-				recds.set(rods[i], rec);
+				recds.push(rec);
 			};
 			
 			//傳送多回合交易紀錄
-			socket.emit('getmultiRecordsResponse', recds.json);
+			socket.emit('getmultiRecordsResponse', recds);
 		}
 		catch(e){
 			socket.emit('getmultiRecordsResponse', {s:"error"});
