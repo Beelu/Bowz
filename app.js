@@ -989,7 +989,7 @@ io.on('connection', (socket) => {
   });
 */
     //交易紀錄要求
-    /*
+    
     socket.on('sendRecordRequest', function (data) {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
@@ -999,7 +999,7 @@ io.on('connection', (socket) => {
 		//傳送交易紀錄
 		socket.emit('getRecordRequest',{record:thisrecord});
 	});
-    */
+    
 
 	//============高鵬雲的部分結束=============//
 });
