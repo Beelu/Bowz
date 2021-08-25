@@ -1015,10 +1015,9 @@ io.on('connection', (socket) => {
 			for(i=0; i<rods.length; i++){
 				var  rec = thisRoom.round[rods[i]].record;
 				recds.set(rods[i], rec);
-				
+			};
 			//傳送多回合交易紀錄
 			socket.emit('getmultiRecordsResponse', recds);
-		};
 		}
 		catch(e){
 			socket.emit('getmultiRecordsResponse', {s:"error"});
