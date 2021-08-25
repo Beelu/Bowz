@@ -1007,10 +1007,11 @@ io.on('connection', (socket) => {
 		
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var Rounds = data.rounds;
-		var Records =  new Map();
-		
+		var recds =  new Map();
+	
 		for(i=0; i<Rounds.length; i++){
-			Records.set(Rounds[i], thisRoom.round[Rounds[i]].record)
+			var  rec = thisRoom.round[Rounds[i]].record;
+			Records.set(Rounds[i], rec);
 		};
 		 
 		//傳送多回合交易紀錄
