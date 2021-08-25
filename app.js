@@ -1010,7 +1010,7 @@ io.on('connection', (socket) => {
 		var Records =  new Map();
 		
 		for(i=0; i<Rounds.length; i++){
-			Records.set(Rounds[i], {thisRoom.round[Rounds[i]].record}
+			Records.set(Rounds[i], thisRoom.round[Rounds[i]].record)
 		};
 		 
 		//傳送多回合交易紀錄
