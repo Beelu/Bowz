@@ -1007,18 +1007,23 @@ io.on('connection', (socket) => {
     
     	//獲取多回合交易紀錄
 	socket.on('send_multiRecords_req', function(data) {
-		
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var Rounds = data.rounds;
-		var recds =  new Map();
-	
-		for(i=0; i<Rounds.length; i++){
-			var  rec = thisRoom.round[Rounds[i]].record;
-			recds.set(Rounds[i], rec);
+		try{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var Rounds = data.rounds;
+			var recds =  new Map();
+
+			for(i=0; i<Rounds.length; i++){
+				var  rec = thisRoom.round[Rounds[i]].record;
+				recds.set(Rounds[i], rec);
+				
+			//傳送多回合交易紀錄
+			socket.emit('getmultiRecordsResponse', recds);
 		};
-		 
-		//傳送多回合交易紀錄
-		socket.emit('getmultiRecordsResponse',{recds});
+		}
+		catch(e){
+			socket.emit('getmultiRecordsResponse', {s:"error"});
+		}
+		
 		
 	});
 	
