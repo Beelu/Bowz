@@ -689,7 +689,9 @@ io.on('connection', (socket) => {
 
 //		console.log(io.sockets.adapter.rooms);
 	});
-
+	
+	//connection response
+	socket.emit('socket_connect_resp', {s:'conresp'});
 
 	//test
 	socket.on('test', (data) => {
