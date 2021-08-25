@@ -1020,7 +1020,7 @@ io.on('connection', (socket) => {
 			
 			
 			//傳送多回合交易紀錄
-			socket.emit('getmultiRecordsResponse', rods);
+			socket.emit('getmultiRecordsResponse', rods[0]);
 		}
 		catch(e){
 			socket.emit('getmultiRecordsResponse', {s:"error"});
