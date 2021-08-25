@@ -990,9 +990,9 @@ io.on('connection', (socket) => {
 
   });
 */
-    //交易紀錄要求
+    	//交易紀錄要求
     
-    socket.on('sendRecordRequest', function (data) {
+    	socket.on('sendRecordRequest', function (data) {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var thisRound = thisRoom.round[data.round];
@@ -1002,7 +1002,23 @@ io.on('connection', (socket) => {
 		socket.emit('getRecordRequest',{record:thisrecord});
 	});
     
-
+    	//獲取多回合交易紀錄
+	socket.on('send_multiRecords_req', function(data) {
+		
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var Rounds = data.rounds;
+		var Records =  new Map();
+		
+		for(i=0; i<Rounds.length; i++){
+			Records.set(Rounds[i], {thisRoom.round[Rounds[i].record]}
+		};
+		 
+		//傳送多回合交易紀錄
+		socket.emit('getmultiRecordsResponse',{Records});
+		
+	});
+	
+	
 	//============高鵬雲的部分結束=============//
 });
 
