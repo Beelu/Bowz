@@ -1009,12 +1009,12 @@ io.on('connection', (socket) => {
 	socket.on('send_multiRecords_req', function(data) {
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-			var Rounds = data.rounds;
+			var rods = data.rounds;
 			var recds =  new Map();
 
-			for(i=0; i<Rounds.length; i++){
-				var  rec = thisRoom.round[Rounds[i]].record;
-				recds.set(Rounds[i], rec);
+			for(i=0; i<rods.length; i++){
+				var  rec = thisRoom.round[rods[i]].record];
+				recds.set(rods[i], rec);
 				
 			//傳送多回合交易紀錄
 			socket.emit('getmultiRecordsResponse', recds);
