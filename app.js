@@ -720,6 +720,9 @@ io.on('connection', (socket) => {
 	socket.on('endRound',(req)=>{
 		if(allRooms.get(req.roomNum).isGaming == false){
 			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
+		}else if(allRooms.get(req.roomNum).nowRound+1 >= allRooms.get(req.roomNum).round.length){
+			allRooms.get(req.roomNum).isGaming = false;
+			io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
 		}else{
 			allRooms.get(req.roomNum).isGaming = false;
 			io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
