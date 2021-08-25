@@ -1019,7 +1019,7 @@ io.on('connection', (socket) => {
 			}
 			*/
 			
-			recds.set(rods[0], 123);
+			recds.set('123', 123);
 			
 			//傳送多回合交易紀錄
 			socket.emit('getmultiRecordsResponse', recds);
