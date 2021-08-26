@@ -423,7 +423,7 @@ app.post("/shuffle", (req, res) => {
 	let tcount = 0; //計已分配的總數量
 	let rantmp = 0; //用來隨機分配的參數
 
-	if(thisRoom.isGamimg == true){
+	if(thisRoom.isGaming == true){
 		res.json({msg:'error'})
 	}else{
 
