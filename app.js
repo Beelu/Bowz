@@ -2,6 +2,7 @@ const { countReset } = require('console');
 const { Socket } = require('dgram');
 const { connect } = require('http2');
 const {MongoClient} = require('mongodb');
+const { all } = require('underscore');
 
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
@@ -80,20 +81,20 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
 
 //https
-// var options = {
-// 	key: fs.readFileSync('./server-key.pem'),
-// 	ca: [fs.readFileSync('./cert.pem')],
-// 	cert: fs.readFileSync('./server-cert.pem')
-// };
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
+};
 
 // Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-const options = {
-	key: privateKey,
-	cert: certificate,
-	ca: certificate
-};
+// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+// const options = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: certificate
+// };
 var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer)
 
@@ -695,6 +696,12 @@ io.on('connection', (socket) => {
 	socket.on('test', (data) => {
 		socket.emit('testResponse', {s:"success"});
 	});
+
+	//給予角色資訊
+	socket.on('reqRole', (data) => {
+		var info = allRooms.get(data.roomNum).Users.get(data.ID);
+		socket.emit('resRole', {user: info})
+	})
 
 	socket.on('startTime',(req)=>{
 		if(allRooms.get(req.roomNum).isGaming == true){

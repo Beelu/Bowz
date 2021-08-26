@@ -17,10 +17,13 @@
 <button id="closeRoom" class="form-control btn btn-primary">關閉房間</button>
 
 <script>
-  const socket = io.connect('http://localhost:3000/');
+  const socket = io.connect('https://localhost:3000/');
   socket.on('connect', function () {
     socket.emit('enterRoom', { roomNum: '9487', username: $("#username").val(), ID: $("#ID").val() });
   });
+
+  socket.emit('reqRole', {roomNum: '9487', ID: '234'})
+  socket.on('resRole', (data) => {console.log(data)})
 
 </script>
 
