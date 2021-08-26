@@ -690,7 +690,9 @@ io.on('connection', (socket) => {
 
 //		console.log(io.sockets.adapter.rooms);
 	});
-
+	
+	//connection response
+	socket.emit('socket_connect_resp', {s:'conresp'});
 
 	//test
 	socket.on('test', (data) => {
@@ -725,6 +727,9 @@ io.on('connection', (socket) => {
 	socket.on('endRound',(req)=>{
 		if(allRooms.get(req.roomNum).isGaming == false){
 			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
+		}else if(allRooms.get(req.roomNum).nowRound+1 >= allRooms.get(req.roomNum).round.length){
+			allRooms.get(req.roomNum).isGaming = false;
+			io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
 		}else{
 			allRooms.get(req.roomNum).isGaming = false;
 			io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
@@ -995,9 +1000,9 @@ io.on('connection', (socket) => {
 
   });
 */
-    //交易紀錄要求
-    /*
-    socket.on('sendRecordRequest', function (data) {
+    	//交易紀錄要求
+    
+    	socket.on('sendRecordRequest', function (data) {
 
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var thisRound = thisRoom.round[data.round];
@@ -1006,8 +1011,30 @@ io.on('connection', (socket) => {
 		//傳送交易紀錄
 		socket.emit('getRecordRequest',{record:thisrecord});
 	});
-    */
-
+    
+    	//獲取多回合交易紀錄
+	socket.on('send_multiRecords_req', function(data) {
+		try{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var rods = data.round;
+			var recds =  [];
+			
+			for(i=0; i<rods.length; i++){
+				var  rec = thisRoom.round[Number(rods[i]-1)].record;
+				recds.push(rec);
+			};
+			
+			//傳送多回合交易紀錄
+			socket.emit('getmultiRecordsResponse', recds);
+		}
+		catch(e){
+			socket.emit('getmultiRecordsResponse', {s:"error"});
+		}
+		
+		
+	});
+	
+	
 	//============高鵬雲的部分結束=============//
 });
 
