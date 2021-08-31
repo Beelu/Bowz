@@ -332,7 +332,9 @@ app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 		initMoney: req.body.initMoney,
 		gameType: req.body.gameType,
 		roomName: req.body.roomName,
-		roundTime: req.body.roundTime
+		roundTime: req.body.roundTime,
+		active: false,
+		nowRoomID: null
 	}
 
 	room.findByIdAndUpdate(req.params.id, editRoom, (err, found) => {
