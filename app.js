@@ -312,7 +312,6 @@ app.post("/createRoom", (req, res) => {
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime,
 		active: false,
-		isGaming: false,
 		nowRoomID: null
 	}
 
@@ -386,6 +385,7 @@ app.post("/openRoom", (req, res) => {
 				roomName: findroom.roomName,
 				Users:Users,
 				nowRound:-1,
+				isGaming: false,
 				admin_transc_times:0
 			});
 			findroom.active = true;
