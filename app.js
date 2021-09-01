@@ -145,8 +145,9 @@ app.post("/login", function (req, res, next) {
 		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
 		req.logIn(user, function (err) {
 			if (err) { return next(err); }
+			var expiretime = Date.now() + 60 * 60 * 1000;
 			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '1h' })
-			res.json({ message: 'login success!', user: user, jwt: token});
+			res.json({ message: 'login success!', user: user, jwt: token, expiresIn: expiretime});
 		});
 	})(req, res, next);
 });
