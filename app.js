@@ -30,7 +30,8 @@ var express = require("express"),
 	crypto = require("crypto"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
-	jwt = require("jsonwebtoken")
+	jwt = require("jsonwebtoken"),
+	lodash = require("lodash")
 
 
 //房間所需要之暫存變數
@@ -55,7 +56,7 @@ allRooms.set("9487",{
 		buyMin: 20,
 		buyMax: 120,
 		item: "apple",
-		record:[{seller:"asdasd", buyer:"qweqwe", price:120}, {seller:"zxczxc", buyer:"fghfgh", price:130}]},
+		record:[{seller:"123", buyer:"234", price:120}, {seller:"234", buyer:"456", price:130}]},
 	{
 		ratio: 0.7,
 		initMoney: 100,
@@ -64,7 +65,7 @@ allRooms.set("9487",{
 		buyMin: 20,
 		buyMax: 120,
 		item: "yanshou",
-		record:[{seller:"qscq", buyer:"zsees", price:100}, {seller:"zxcc", buyer:"hfgh", price:200}]}
+		record:[{seller:"456", buyer:"123", price:100}, {seller:"234", buyer:"678", price:200}]}
 	],
 	isGaming:false,
 	gameType: 1,
@@ -81,20 +82,20 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
 
 //https
-// var options = {
-// 	key: fs.readFileSync('./server-key.pem'),
-// 	ca: [fs.readFileSync('./cert.pem')],
-// 	cert: fs.readFileSync('./server-cert.pem')
-// };
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
+};
 
 // Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-const options = {
-	key: privateKey,
-	cert: certificate,
-	ca: certificate
-};
+// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+// const options = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: certificate
+// };
 var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer)
 
@@ -704,8 +705,15 @@ io.on('connection', (socket) => {
 
 	//給予角色資訊
 	socket.on('reqRole', (data) => {
-		var info = allRooms.get(data.roomNum).Users.get(data.ID);
-		socket.emit('resRole', {user: info})
+		var room = allRooms.get(data.roomNum);
+		var info = room.Users.get(data.ID);
+		var buy_trans = [];
+		var sell_trans = [];
+		if(room.round[room.nowRound]){
+			buy_trans = lodash.filter(room.round[room.nowRound].record, { 'buyer': data.ID } );
+			sell_trans = lodash.filter(room.round[room.nowRound].record, { 'seller': data.ID } );
+		}
+		socket.emit('resRole', {user: info, buyer: buy_trans, seller:sell_trans});
 	})
 
 	socket.on('startTime',(req)=>{
