@@ -627,7 +627,6 @@ app.post('/saveRecord', (req, res)=>{
 							console.log(err);
 						}else{
 							tempTotalTrans.push(newTrans);
-							console.log(tempTotalTrans);
 						}
 					});
 				}
@@ -636,7 +635,7 @@ app.post('/saveRecord', (req, res)=>{
 		}
 		await recording();
 		//存進所有歷史紀錄
-		//console.log(tempTotalTrans);
+		// console.log(tempTotalTrans);
 		newRecord.transactions = tempTotalTrans;
 		newRecord.save();
 
@@ -691,10 +690,18 @@ io.on('connection', (socket) => {
 	//進入房間
 	socket.on('enterRoom', (data) => {
 		socket.join(data.roomNum);
+	});
 
-//		console.log(io.sockets.adapter.rooms);
+	//離開
+	socket.on('leaveRoom', (data) => {
+		socket.leave(data.roomNum)
 	});
 	
+	//關閉房間(老師按按鈕)
+	socket.on('closeRoom', (data) => {
+		io.to(data.roomNum).emit('get_out');
+	});
+
 	//connection response
 	socket.emit('socket_connect_resp', {s:'conresp'});
 
