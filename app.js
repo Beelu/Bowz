@@ -738,10 +738,22 @@ io.on('connection', (socket) => {
 			totalChartData.set(req.roomNum,chartData);
 			allRooms.get(req.roomNum).nowRound+=1;
 			allRooms.get(req.roomNum).isGaming = true;
-			io.sockets.in(req.roomNum).emit('startTimeResponse',allRooms.get(req.roomNum).roundTime);
+
+			let currentTime = new Date();
+			let tmpTime = currentTime.getTime();
+			let expireTime = new Date();
+			expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+
+			io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
 			//io.emit('startTimeResponse', dt);
 		}
 	});
+
+
+	//獲取主機現在時間
+	socket.on('currentTime',(req)=>{
+			io.sockets.in(req.roomNum).emit('currentTimeResponse',new Date().toLocaleString());
+		});
 
 	socket.on('endRound',(req)=>{
 		if(allRooms.get(req.roomNum).isGaming == false){
