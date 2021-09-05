@@ -724,9 +724,9 @@ io.on('connection', (socket) => {
 		socket.emit('resRole', {user: info, buyer: buy_trans, seller:sell_trans});
 	})
 
-	socket.on('startTime',(req)=>{
+	socket.on('startGame',(req)=>{
 		if(allRooms.get(req.roomNum).isGaming == true){
-			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
+			io.sockets.in(req.roomNum).emit('startGameResponse','error');
 		}else{
 			let tmp = tmpChartData.get(req.roomNum)
 			let chartData = totalChartData.get(req.roomNum);
@@ -738,17 +738,18 @@ io.on('connection', (socket) => {
 			totalChartData.set(req.roomNum,chartData);
 			allRooms.get(req.roomNum).nowRound+=1;
 			allRooms.get(req.roomNum).isGaming = true;
-
-			let currentTime = new Date();
-			let tmpTime = currentTime.getTime();
-			let expireTime = new Date();
-			expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
-
-			io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
+			io.sockets.in(req.roomNum).emit('startGameResponse', 'success');
 			//io.emit('startTimeResponse', dt);
 		}
 	});
-
+	
+	socket.on('startTime',(req)=>{
+		let currentTime = new Date();
+		let tmpTime = currentTime.getTime();
+		let expireTime = new Date();
+		expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+		io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
+	});
 
 	//獲取主機現在時間
 	socket.on('currentTime',(req)=>{
