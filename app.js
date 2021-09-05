@@ -742,14 +742,14 @@ io.on('connection', (socket) => {
 			//io.emit('startTimeResponse', dt);
 		}
 	});
-
-	// socket.on('startTime',(req)=>{
-	// 	let currentTime = new Date();
-	// 	let tmpTime = currentTime.getTime();
-	// 	let expireTime = new Date();
-	// 	expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
-	// 	io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
-	// });
+	
+	socket.on('startTime',(req)=>{
+		let currentTime = new Date();
+		let tmpTime = currentTime.getTime();
+		let expireTime = new Date();
+		expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+		io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
+	});
 
 	//獲取主機現在時間
 	socket.on('currentTime',(req)=>{
