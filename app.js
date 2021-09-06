@@ -835,29 +835,20 @@ io.on('connection', (socket) => {
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
 			let roundNum = req.roundNum;
-			let total = thisRoom.Users.size; 
-			let interval = thisRoom.interval;
 			let saleMax = thisRoom.round[roundNum].saleMax;
 			let buyMax = thisRoom.round[roundNum].buyMax;
 			let saleMin = thisRoom.round[roundNum].saleMin;
 			let buyMin = thisRoom.round[roundNum].buyMin;
-			let ratio;
+			let ratio =  thisRoom.round[roundNum].ratio/100;
+			let total = thisRoom.total; 
+			let interval = thisRoom.interval;
 			let restrict;//紀錄買家賣家何者較少
 			let tcount = 0; //計已分配的總數量
 			let rantmp = 0; //用來隨機分配的參數
 
-			
 			if(thisRoom.isGaming == true){
-				res.json({msg:'Error'})
+				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 			}else{
-				//設定ratio
-				if(thisRoom.round[roundNum].ratio == null){
-					do{
-						ratio = randomNormal({mean: 0.5})
-					}while( ratio < 0.3 || ratio > 0.7)
-				}else{
-					ratio = thisRoom.round[roundNum].ratio;
-				}
 
 				let sellerNum = Math.round(ratio * total)
 				let buyerNum = total-sellerNum
@@ -912,11 +903,10 @@ io.on('connection', (socket) => {
 						thisRoom.Users.set(key,value)
 					}
 				});
-				allRooms.set(req.roomNum, thisRoom);
+				allRooms.set(req.body.roomNum, thisRoom);
 				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
 		}catch(e){
-			console.log(e)
 			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 		}
 	}))
@@ -1079,13 +1069,13 @@ io.on('connection', (socket) => {
 	//公告訊息與changeRoleMoney////////
 	socket.on('sendsysmsg', function(data) {
 		try{
-			var thisRoom = data.roomNum;
-			var msg = data.msg;
+			let thisRoom = allRooms.get(req.roomNum);
+			let msg = data.msg;
 			let bPrice =  parseInt(data.bAdjustPrice);
 			let sPrice =  parseInt(data.sAdjustPrice);
 			let buyerMoneyData = [];
 			let sellerMoneyData = [];
-
+			console.log(thisRoom)
 			//把User裡屬於該role的金額依序調整
 			thisRoom.Users.forEach(function(value, key) {
 				if(value.role=="buyer"){
@@ -1109,10 +1099,10 @@ io.on('connection', (socket) => {
 			tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
 			allRooms.set(req.body.roomNum, thisRoom);	
 
-			io.sockets.in(thisRoom).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+			io.sockets.in(data.roomNum).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
 		}
 		catch(e){
-			io.sockets.in(thisRoom).emit('sys','error')
+			io.sockets.in(data.roomNum).emit('sys','error')
 		}	
 	});
 		
