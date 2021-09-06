@@ -14,9 +14,14 @@
   <script>
     $(document).ready(function () {
       //進入房間
+      var socket = io();
       $('#enterRoom').click(function () {
-        var socket = io();
         socket.emit('enterRoom', {roomNum: $("#roomID").val(), username: $("#username").val(), ID: $("#ID").val()});
+        socket.emit('reqRole', {roomNum:'9487', ID:'asdasd'});
+      })
+
+      socket.on('resRole', (data)=>{
+        console.log(data);
       })
 
       //開新房間

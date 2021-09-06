@@ -391,6 +391,7 @@ app.post("/openRoom", (req, res) => {
 				gameType:findroom.gameType,
 				roundTime:findroom.roundTime,
 				roomName: findroom.roomName,
+				initMoney: findroom.initMoney,
 				Users:Users,
 				nowRound:-1,
 				isGaming: false,
