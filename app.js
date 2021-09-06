@@ -37,7 +37,7 @@ var express = require("express"),
 //房間所需要之暫存變數
 var allRooms = new Map();
 var testusers = new Map();
-var records = [];
+//var records = [];
 var tmpChartData = new Map();
 var totalChartData = new Map();
 
@@ -50,7 +50,6 @@ testusers.set('678', {username: '678', money: 350, role:"seller", price:90,  ite
 allRooms.set("9487",{
 	round:[{
 		ratio: 0.7,
-		initMoney: 100,
 		saleMin: 10,
 		saleMax: 100,
 		buyMin: 20,
@@ -59,7 +58,6 @@ allRooms.set("9487",{
 		record:[{seller:"123", buyer:"234", price:120}, {seller:"234", buyer:"456", price:130}]},
 	{
 		ratio: 0.7,
-		initMoney: 100,
 		saleMin: 10,
 		saleMax: 100,
 		buyMin: 20,
@@ -67,6 +65,7 @@ allRooms.set("9487",{
 		item: "yanshou",
 		record:[{seller:"456", buyer:"123", price:100}, {seller:"234", buyer:"678", price:200}]}
 	],
+	initMoney: 100,
 	isGaming:false,
 	gameType: 1,
 	roundTime:120,
@@ -297,7 +296,7 @@ app.post("/reset/:token", (req, res) => {
 app.post("/enterRoom", (req, res) => {
 	var thisRoom = allRooms.get(req.body.roomNum);
 	if (thisRoom) {
-		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
+		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 100, isManager: false ,price : 0})		//設定進入使用者的資料
 		thisRoom.total = thisRoom.Users.size;
 		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
 
@@ -704,11 +703,9 @@ io.on('connection', (socket) => {
 				if(thisUser){
 					console.log("已在房間，僅連接socket");
 				}else{
-					thisRoom.Users.set(data.ID, { username: data.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
-			
-					//console.log(allRooms.get(data.roomNum));
 					console.log("已進入房間並連接socket");
 				}
 			} else {
