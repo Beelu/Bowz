@@ -690,17 +690,29 @@ io.on('connection', (socket) => {
 
 	//進入房間
 	socket.on('enterRoom', (data) => {
-		socket.join(data.roomNum);
+		try{
+			socket.join(data.roomNum);
+		}		
+		catch(e){
+		}	
 	});
-
 	//離開
 	socket.on('leaveRoom', (data) => {
-		socket.leave(data.roomNum)
+		try{
+			socket.leave(data.roomNum)
+		}		
+		catch(e){
+		}	
 	});
 	
 	//關閉房間(老師按按鈕)
 	socket.on('closeRoom', (data) => {
-		io.to(data.roomNum).emit('get_out');
+		try{
+			io.to(data.roomNum).emit('get_out');
+		}       
+		catch(e){
+		}
+	
 	});
 
 	//connection response
@@ -713,59 +725,88 @@ io.on('connection', (socket) => {
 
 	//給予角色資訊
 	socket.on('reqRole', (data) => {
-		var room = allRooms.get(data.roomNum);
-		var info = room.Users.get(data.ID);
-		var buy_trans = [];
-		var sell_trans = [];
-		if(room.round[room.nowRound]){
-			buy_trans = lodash.filter(room.round[room.nowRound].record, { 'buyer': data.ID } );
-			sell_trans = lodash.filter(room.round[room.nowRound].record, { 'seller': data.ID } );
+		try{
+			var room = allRooms.get(data.roomNum);
+			var info = room.Users.get(data.ID);
+			var buy_trans = [];
+			var sell_trans = [];
+			if(room.round[room.nowRound]){
+				buy_trans = lodash.filter(room.round[room.nowRound].record, { 'buyer': data.ID } );
+				sell_trans = lodash.filter(room.round[room.nowRound].record, { 'seller': data.ID } );
+			}
+			socket.emit('resRole', {user: info, buyer: buy_trans, seller:sell_trans});
+		}       
+		catch(e){
+			socket.emit('resRole','error')
 		}
-		socket.emit('resRole', {user: info, buyer: buy_trans, seller:sell_trans});
+	
 	})
 
 	socket.on('startGame',(req)=>{
-		if(allRooms.get(req.roomNum).isGaming == true){
-			io.sockets.in(req.roomNum).emit('startGameResponse','error');
-		}else{
-			let tmp = tmpChartData.get(req.roomNum)
-			let chartData = totalChartData.get(req.roomNum);
-			if (chartData == null){
-				chartData = [tmp];
+		try{
+			if(allRooms.get(req.roomNum).isGaming == true){
+				io.sockets.in(req.roomNum).emit('startGameResponse','error');
 			}else{
-				chartData.push(tmp)
+				let tmp = tmpChartData.get(req.roomNum)
+				let chartData = totalChartData.get(req.roomNum);
+				if (chartData == null){
+					chartData = [tmp];
+				}else{
+					chartData.push(tmp)
+				}
+				totalChartData.set(req.roomNum,chartData);
+				allRooms.get(req.roomNum).nowRound+=1;
+				allRooms.get(req.roomNum).isGaming = true;
+				io.sockets.in(req.roomNum).emit('startGameResponse', 'success');
+				//io.emit('startTimeResponse', dt);
 			}
-			totalChartData.set(req.roomNum,chartData);
-			allRooms.get(req.roomNum).nowRound+=1;
-			allRooms.get(req.roomNum).isGaming = true;
-			io.sockets.in(req.roomNum).emit('startGameResponse', 'success');
-			//io.emit('startTimeResponse', dt);
+		}       
+		catch(e){
+			io.sockets.in(req.roomNum).emit('startGameResponse','error')
 		}
+	
+		
 	});
 	
 	socket.on('startTime',(req)=>{
-		let currentTime = new Date();
-		let tmpTime = currentTime.getTime();
-		let expireTime = new Date();
-		expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
-		io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
+		try{
+			let currentTime = new Date();
+			let tmpTime = currentTime.getTime();
+			let expireTime = new Date();
+			expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+			io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
+		}       
+		catch(e){
+			io.sockets.in(req.roomNum).emit('startTimeResponse','error')
+		}
 	});
 
 	//獲取主機現在時間
 	socket.on('currentTime',(req)=>{
+		try{
 			io.sockets.in(req.roomNum).emit('currentTimeResponse',new Date().toLocaleString());
-		});
+		}       
+		catch(e){
+			io.sockets.in(req.roomNum).emit('currentTimeResponse','error')
+		}
+	});
 
 	socket.on('endRound',(req)=>{
-		if(allRooms.get(req.roomNum).isGaming == false){
-			io.sockets.in(req.roomNum).emit('endRoundResponse','error');
-		}else if(allRooms.get(req.roomNum).nowRound+1 >= allRooms.get(req.roomNum).round.length){
-			allRooms.get(req.roomNum).isGaming = false;
-			io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
-		}else{
-			allRooms.get(req.roomNum).isGaming = false;
-			io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
+		try{
+			if(allRooms.get(req.roomNum).isGaming == false){
+				io.sockets.in(req.roomNum).emit('endRoundResponse','error');
+			}else if(allRooms.get(req.roomNum).nowRound+1 >= allRooms.get(req.roomNum).round.length){
+				allRooms.get(req.roomNum).isGaming = false;
+				io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
+			}else{
+				allRooms.get(req.roomNum).isGaming = false;
+				io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
+			}
+		}       
+		catch(e){
+			io.sockets.in(req.roomNum).emit('endRoundResponse','error')
 		}
+		
 	});
 
 	//================林育緹部分===================//
@@ -876,6 +917,7 @@ io.on('connection', (socket) => {
 	*紀錄User建立connerction後的socket物件
 	*/
 	socket.on('setSocket', (data)=>{
+		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
 			var thisuser = allUsers.get(String(data.user_id));
@@ -888,6 +930,11 @@ io.on('connection', (socket) => {
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
 			io.to(s_id).emit('testsocket',  {s:s_id});
+		}       
+		catch(e){
+			io.to(allUsers.get(String(data.user_id)).socketID).emit('testsocket', 'error');
+		}
+			
 	});
 
   	  
@@ -896,19 +943,27 @@ io.on('connection', (socket) => {
   	* socket版本
   	*/
 	  socket.on('checkQRcode', (data) =>{
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var allUsers = thisRoom.Users;//獲取所有Users
-		
-		var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
-		var payerSocket = payer.socketID;
-		var receiver_id = data.receiver_id;
-		
-		socket.broadcast.to(payerSocket).emit('transCheckReq', receiver_id);
-		
+		try{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var allUsers = thisRoom.Users;//獲取所有Users
+			
+			var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+			var payerSocket = payer.socketID;
+			var receiver_id = data.receiver_id;
+			
+			socket.broadcast.to(payerSocket).emit('transCheckReq', receiver_id);
+			
+		}       
+		catch(e){
+			io.sockets.in(thisRoom).emit('transCheckReq','error')
+		}
+	
+
 	});
 
 	//聽取回應
 	socket.on('get_chek_point', (data)=>{
+		
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
 
@@ -976,21 +1031,58 @@ io.on('connection', (socket) => {
 	
   	//test
 	socket.on('faketransc', (data) => {
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var allUsers = thisRoom.Users;//獲取所有Users
-
-		var thisRound = data.round//獲取本回合
+		try{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var allUsers = thisRoom.Users;//獲取所有Users
+	
+			var thisRound = data.round//獲取本回合
+			
+			socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
 		
-		socket.emit('getRecordRequest', thisRoom.round[thisRound].record)
+		}       
+		catch(e){
+			socket.emit('getRecordRequest','error')
+		}
 	});
 
-	//公告訊息////////
+	//公告訊息與changeRoleMoney////////
 	socket.on('sendsysmsg', function(data) {
-		var thisRoom = data.roomNum;
-		var msg = data.msg;
-		
-		io.sockets.in(thisRoom).emit('sys', msg);
-		
+		try{
+			var thisRoom = data.roomNum;
+			var msg = data.msg;
+			let bPrice =  parseInt(data.bAdjustPrice);
+			let sPrice =  parseInt(data.sAdjustPrice);
+			let buyerMoneyData = [];
+			let sellerMoneyData = [];
+
+			//把User裡屬於該role的金額依序調整
+			thisRoom.Users.forEach(function(value, key) {
+				if(value.role=="buyer"){
+					value.price += bPrice 
+					buyerMoneyData.push(value.price);
+				}else{
+					value.price += sPrice
+					sellerMoneyData.push(value.price);
+				}
+			});
+
+			//利用buyerMoneyData和sellerMoneyData做成chartData
+			buyerMoneyData.sort((a, b) => b - a);
+			sellerMoneyData.sort((a, b) => a - b);
+
+			let p = 0
+			while (buyerMoneyData[p]-sellerMoneyData[p]>0){
+				p++
+			}
+
+			tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
+			allRooms.set(req.body.roomNum, thisRoom);	
+
+			io.sockets.in(thisRoom).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+		}
+		catch(e){
+			io.sockets.in(thisRoom).emit('sys','error')
+		}	
 	});
 		
 
@@ -1034,14 +1126,20 @@ io.on('connection', (socket) => {
 */
     	//交易紀錄要求
     
-    	socket.on('sendRecordRequest', function (data) {
+    socket.on('sendRecordRequest', function (data) {
+		try{
+				
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var thisRound = thisRoom.round[data.round];
+			var thisrecord =  thisRound.record;
 
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var thisRound = thisRoom.round[data.round];
-		var thisrecord =  thisRound.record;
+			//傳送交易紀錄
+			socket.emit('getRecordRequest',{record:thisrecord});
+		}       
+		catch(e){
+			socket.emit('getRecordRequest','error')
+		}
 
-		//傳送交易紀錄
-		socket.emit('getRecordRequest',{record:thisrecord});
 	});
     
     	//獲取多回合交易紀錄
@@ -1060,7 +1158,7 @@ io.on('connection', (socket) => {
 			socket.emit('getmultiRecordsResponse', recds);
 		}
 		catch(e){
-			socket.emit('getmultiRecordsResponse', {s:"error"});
+			socket.emit('getmultiRecordsResponse', 'error');
 		}
 		
 		
