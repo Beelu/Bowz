@@ -9,7 +9,7 @@ middleware.isLogin = function(req, res, next){
 		jwt.verify(token, "ZaWarudo", (err, decode)=>{
 			if(err){
 				console.log(err)
-				res.status(500).json({ message: '驗證失敗，請重新登入'});
+				res.status(403).json({ message: '驗證失敗，請重新登入'});
 			}
 			else{
 				next()
@@ -25,7 +25,7 @@ middleware.checkOwnership = function(req, res, next){
 		const token = req.header('Authorization').replace('Bearer ', '')
 		jwt.verify(token, "ZaWarudo", (err, decode)=>{
 			if(err){
-				res.status(500).json({ message: "You Don't Have Permission To Do This."});
+				res.status(403).json({ message: "驗證失敗"});
 			}
 			else{
 				room.findById(req.params.id, function(err, foundroom){
@@ -35,10 +35,37 @@ middleware.checkOwnership = function(req, res, next){
 						if(foundroom.email == decode.email){
 							next();
 						}else{
-							res.status(500).json({ message: "You Don't Have Permission To Do This."});
+							res.status(401).json({ message: "You Don't Have Permission To Do This."});
 						}
 					}
 				});
+			}
+		})
+	}else{
+		res.status(500).json({ message: '獲取token失敗'});
+	}
+}
+
+middleware.checkManager = function(req, res, next){
+	if(req.header('Authorization')){
+		const token = req.header('Authorization').replace('Bearer ', '')
+		jwt.verify(token, "ZaWarudo", (err, decode)=>{
+			if(err){
+				console.log(err)
+				res.status(403).json({ message: '驗證失敗，請重新登入'});
+			}
+			else{
+				user.findById(decode._id, function(err, foundUser){
+					if(err){
+						res.status(500).json({ message: 'Something Get Wrong!'});
+					}else{
+						if(foundUser.isManager){
+							next();
+						}else{
+							res.status(401).json({ message: "You Don't Have Permission To Do This."});
+						}
+					}
+				})
 			}
 		})
 	}else{

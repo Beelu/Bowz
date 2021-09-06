@@ -97,7 +97,12 @@ const options = {
 	ca: certificate
 };
 var httpsServer = https.createServer(options, app)
-var io = require("socket.io")(httpsServer)
+var io = require("socket.io")(httpsServer, {
+	cors: {
+		origin: "https://lbdgame.mgt.ncu.edu.tw",
+		methods: ["GET", "POST"]
+	}
+})
 
 //資料庫初始設置
 var url = process.env.databaseURL //|| "mongodb://localhost/project";
@@ -189,7 +194,7 @@ app.get("/room/:id", function (req, res) {
 })
 
 //入口頁面
-app.get("/entrance", middleware.isLogin, function (req, res) {
+app.get("/entrance", function (req, res) {
 	res.render("entrance");
 })
 
@@ -252,7 +257,7 @@ app.post("/forget", (req, res) => {
 				to: founduser.email,
 				from: "gankgank8787@gmail.com",
 				subject: "Reset Password",
-				text: "click the link below to reset you password.\n http://lbdgame.mgt.ncu.edu.tw:8000/forgetpassword2?token=" + token
+				text: "click the link below to reset you password.\n https://lbdgame.mgt.ncu.edu.tw/forgetpassword2?token=" + token
 			}
 			transport.sendMail(content, (err) => {
 				console.log("email has been send to " + user.email + ", please check with further instruction.");
@@ -290,8 +295,8 @@ app.post("/reset/:token", (req, res) => {
 //==================================一般功能(尚未連線)================================//
 //進入房間名單
 app.post("/enterRoom", (req, res) => {
-	if (allRooms.get(req.body.roomNum)) {
-		thisRoom = allRooms.get(req.body.roomNum);
+	var thisRoom = allRooms.get(req.body.roomNum);
+	if (thisRoom) {
 		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
 		thisRoom.total = thisRoom.Users.size;
 		allRooms.set(req.body.roomNum, thisRoom);		//更新房間資訊
@@ -690,7 +695,24 @@ io.on('connection', (socket) => {
 
 	//進入房間
 	socket.on('enterRoom', (data) => {
-		socket.join(data.roomNum);
+		var thisRoom = allRooms.get(data.roomNum);
+		if (thisRoom) {
+			socket.join(data.roomNum);
+
+			var thisUser = thisRoom.Users.get(data.ID)
+			if(thisUser){
+				console.log("已在房間，僅連接socket");
+			}else{
+				thisRoom.Users.set(data.ID, { username: data.username, money: 0, isManager: false ,price : 0})		//設定進入使用者的資料
+				thisRoom.total = thisRoom.Users.size;
+				allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
+		
+				//console.log(allRooms.get(data.roomNum));
+				console.log("已進入房間並連接socket");
+			}
+		} else {
+			console.log("房間並不存在");
+		}
 	});
 
 	//離開
@@ -700,7 +722,7 @@ io.on('connection', (socket) => {
 	
 	//關閉房間(老師按按鈕)
 	socket.on('closeRoom', (data) => {
-		io.to(data.roomNum).emit('get_out');
+		io.in(data.roomNum).emit('get_out');
 	});
 
 	//connection response
