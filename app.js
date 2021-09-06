@@ -782,6 +782,13 @@ io.on('connection', (socket) => {
 				}else{
 					chartData.push(tmp)
 				}
+
+				let currentTime = new Date();
+				let tmpTime = currentTime.getTime();
+				let expireTime = new Date();
+				expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+				allRooms.get(req.roomNum).expireTime = expireTime		
+				
 				totalChartData.set(req.roomNum,chartData);
 				allRooms.get(req.roomNum).nowRound+=1;
 				allRooms.get(req.roomNum).isGaming = true;
@@ -799,13 +806,8 @@ io.on('connection', (socket) => {
 	
 	socket.on('startTime',(req)=>{
 		try{
-			let currentTime = new Date();
-			let tmpTime = currentTime.getTime();
-			let expireTime = new Date();
-			allRooms.get(req.roomNum).expireTime = expireTime
-			expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
+			let expireTime = allRooms.get(req.roomNum).expireTime
 			io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
-		
 		}catch(e){
 			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
 		
