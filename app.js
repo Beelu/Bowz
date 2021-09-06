@@ -343,13 +343,21 @@ app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 		nowRoomID: null
 	}
 
-	room.findByIdAndUpdate(req.params.id, editRoom, (err, found) => {
+	room.findById(req.params.id, (err, found) => {
 		if(err){
 			res.json({message:"something got wrong."});
 		}else{
-			res.json({message:"successfully edit room."});
+			editRoom.active = found.active;
+			editRoom.nowRoomID = found.nowRoomID;
+			room.findByIdAndUpdate(req.params.id, editRoom, (err, updated) => {
+				if(err){
+					res.json({message:"something got wrong."});
+				}else{
+					res.json({message:"successfully edit room."});
+				}
+			});
 		}
-	});
+	})
 });
 
 //取得特定房間資訊
