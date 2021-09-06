@@ -828,86 +828,85 @@ io.on('connection', (socket) => {
 		
 	});
 
-	//================林育緹部分===================//
-	//開始遊戲的發放身份與金錢
-	// socket.on('startGame', (data) => {
+	socket.on('shuffle',(req=>{
+		try{
+			let thisRoom = allRooms.get(req.roomNum);
+			let roundNum = req.roundNum;
+			let saleMax = thisRoom.round[roundNum].saleMax;
+			let buyMax = thisRoom.round[roundNum].buyMax;
+			let saleMin = thisRoom.round[roundNum].saleMin;
+			let buyMin = thisRoom.round[roundNum].buyMin;
+			let ratio =  thisRoom.round[roundNum].ratio/100;
+			let total = thisRoom.total; 
+			let interval = thisRoom.interval;
+			let restrict;//紀錄買家賣家何者較少
+			let tcount = 0; //計已分配的總數量
+			let rantmp = 0; //用來隨機分配的參數
 
-	// 	let thisRoom = allRooms.get(data.roomNum);
-	// 	let total = thisRoom.total;
-	// 	let saleMax = thisRoom.saleMax;
-	// 	let buyMax = thisRoom.buyMax;
-	// 	let saleMin = thisRoom.saleMin;
-	// 	let buyMin = thisRoom.buyMin;
-	// 	let interval = thisRoom.interval;
-	// 	let ratio;
-	// 	let i = 1;
+			if(thisRoom.isGaming == true){
+				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
+			}else{
 
-	// 	if (thisRoom.ratio == null) {
-	// 		do {
-	// 			ratio = randomNormal({ mean: 0.5 })
-	// 		} while (ratio < 0.3 || ratio > 0.7)
-	// 	} else {
-	// 		ratio = thisRoom.ratio;
-	// 	}
+				let sellerNum = Math.round(ratio * total)
+				let buyerNum = total-sellerNum
 
-	// 	let sellerNum = ratio * total;
-
-	// 	thisRoom.Users.forEach(function (value, key) {
-	// 		if (i <= sellerNum) {
-	// 			money = Math.floor(Math.random() * (saleMax - saleMin)) + saleMin
-	// 			money = interval * Math.ceil(money / interval)
-	// 			value.role = 'seller'
-	// 			value.money = money
-	// 		}
-	// 		else {
-	// 			money = Math.floor(Math.random() * (buyMax - buyMin)) + buyMin
-	// 			money = interval * Math.ceil(money / interval)
-	// 			value.role = 'buyer'
-	// 			value.money = money
-	// 		}
-	// 		thisRoom.Users.set(key, value)
-	// 		i++;
-	// 	});
-
-	// 	allRooms.set(data.roomNum, thisRoom);
-	// 	console.log(allRooms.get('9487'))
-
-	// 	userData = thisRoom.Users
-	// 	io.emit('startGameData', Array.from(userData));
-	// });
-
-
-	// socket.on('lineChart', (data) => {
-
-	// 	let buyerData = [];
-	// 	let sellerData = [];
-	// 	thisRoom = allRooms.get(data.roomNum);
-
-	// 	thisRoom.Users.forEach(function (value, key) {
-	// 		if (value.role == "buyer") {
-	// 			buyerData.push({ money: value.money });
-	// 		} else {
-	// 			sellerData.push({ money: value.money });
-	// 		}
-	// 	});
-
-	// 	buyerData.sort((a, b) => b - a);
-	// 	sellerData.sort((a, b) => a - b);
-
-	// 	let p = 0
-	// 	while (buyerData[p]-sellerData[p]>0){
-	// 	p++
-	// 	}
-
-	// 	allMoney.set('point',p);
-	// 	allMoney.set('buyer',buyerData);
-	// 	allMoney.set('seller',sellerData);
-	// 	console.log(allMoney)
-
-	// 	io.emit('lineChartData', Array.from(allMoney));
-
-	// })
-	//===============林育緹部分結束==================//
+				if(sellerNum>=buyerNum){
+					restrict = buyerNum;
+				}else{
+					restrict = sellerNum;
+				}
+				// 分配身份的步驟：假設有12人 buyer:5 seller:7 
+				// 1.先分配10個人分別五五買賣 2.再分配兩個seller
+				thisRoom.Users.forEach(function(value,key) {
+					
+					//上述的步驟一在if內完成，步驟二在else內完成
+					if(tcount<restrict*2){
+						if(tcount%2==0){
+							rantmp = Math.floor(Math.random() * 2)
+						}
+						switch(rantmp){
+							case 0:
+								money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+								money = interval * Math.ceil(money/interval)
+								value.role = 'seller' 
+								value.price = money 
+								rantmp=1
+								break;
+							case 1:
+								money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+								money = interval * Math.ceil(money/interval)
+								value.role = 'buyer' 
+								value.price = money
+								rantmp=0
+								break;
+						}
+						tcount++;
+						thisRoom.Users.set(key,value)
+					}else{
+						if(sellerNum>buyerNum){
+							money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+							money = interval * Math.ceil(money/interval)
+							value.role = 'seller' 
+							value.price = money 
+						}else{
+							money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+							money = interval * Math.ceil(money/interval)
+							value.role = 'buyer' 
+							value.price = money
+							rantmp=0
+						}
+						
+						tcount++;
+						thisRoom.Users.set(key,value)
+					}
+				});
+				allRooms.set(req.body.roomNum, thisRoom);
+				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
+			}
+		}catch(e){
+			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
+		}
+	}))
 
 	//===============高鵬雲部分====================//
 
@@ -1067,13 +1066,13 @@ io.on('connection', (socket) => {
 	//公告訊息與changeRoleMoney////////
 	socket.on('sendsysmsg', function(data) {
 		try{
-			var thisRoom = data.roomNum;
-			var msg = data.msg;
+			let thisRoom = allRooms.get(req.roomNum);
+			let msg = data.msg;
 			let bPrice =  parseInt(data.bAdjustPrice);
 			let sPrice =  parseInt(data.sAdjustPrice);
 			let buyerMoneyData = [];
 			let sellerMoneyData = [];
-
+			console.log(thisRoom)
 			//把User裡屬於該role的金額依序調整
 			thisRoom.Users.forEach(function(value, key) {
 				if(value.role=="buyer"){
@@ -1097,10 +1096,10 @@ io.on('connection', (socket) => {
 			tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
 			allRooms.set(req.body.roomNum, thisRoom);	
 
-			io.sockets.in(thisRoom).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
+			io.sockets.in(data.roomNum).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
 		}
 		catch(e){
-			io.sockets.in(thisRoom).emit('sys','error')
+			io.sockets.in(data.roomNum).emit('sys','error')
 		}	
 	});
 		
