@@ -788,26 +788,31 @@ io.on('connection', (socket) => {
 		
 	});
 	
+	
 	socket.on('startTime',(req)=>{
 		try{
 			let currentTime = new Date();
 			let tmpTime = currentTime.getTime();
 			let expireTime = new Date();
+			allRooms.get(req.roomNum).expireTime = expireTime
 			expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
 			io.sockets.in(req.roomNum).emit('startTimeResponse',expireTime.toLocaleString());
-		}       
-		catch(e){
-			io.sockets.in(req.roomNum).emit('startTimeResponse','error')
+		
+		}catch(e){
+			io.sockets.in(req.roomNum).emit('startTimeResponse','error');
+		
 		}
 	});
 
-	//獲取主機現在時間
 	socket.on('currentTime',(req)=>{
 		try{
-			io.sockets.in(req.roomNum).emit('currentTimeResponse',new Date().toLocaleString());
-		}       
-		catch(e){
-			io.sockets.in(req.roomNum).emit('currentTimeResponse','error')
+			let nowTime = new Date();
+			let expireTime =  allRooms.get(req.roomNum).expireTime
+			let remainSecond = (expireTime - nowTime )/1000
+			io.sockets.in(req.roomNum).emit('currentTimeResponse',{remainSecond : remainSecond});
+		}catch(e){
+			io.sockets.in(req.roomNum).emit('currentTimeResponse','error');
+	
 		}
 	});
 
@@ -1067,13 +1072,12 @@ io.on('connection', (socket) => {
 	//公告訊息與changeRoleMoney////////
 	socket.on('sendsysmsg', function(data) {
 		try{
-			let thisRoom = allRooms.get(req.roomNum);
+			let thisRoom = allRooms.get(data.roomNum);
 			let msg = data.msg;
 			let bPrice =  parseInt(data.bAdjustPrice);
 			let sPrice =  parseInt(data.sAdjustPrice);
 			let buyerMoneyData = [];
 			let sellerMoneyData = [];
-			console.log(thisRoom)
 			//把User裡屬於該role的金額依序調整
 			thisRoom.Users.forEach(function(value, key) {
 				if(value.role=="buyer"){
@@ -1094,8 +1098,8 @@ io.on('connection', (socket) => {
 				p++
 			}
 
-			tmpChartData.set(req.body.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
-			allRooms.set(req.body.roomNum, thisRoom);	
+			tmpChartData.set(data.roomNum ,{buyer:buyerMoneyData,seller:sellerMoneyData,point:p})
+			allRooms.set(data.roomNum, thisRoom);	
 
 			io.sockets.in(data.roomNum).emit('sys', {message : msg,chartData: {buyer:buyerMoneyData,seller:sellerMoneyData,point:p}});
 		}
@@ -1103,7 +1107,6 @@ io.on('connection', (socket) => {
 			io.sockets.in(data.roomNum).emit('sys','error')
 		}	
 	});
-		
 
   /*交易確認要求
   *找payer
