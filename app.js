@@ -968,10 +968,10 @@ io.on('connection', (socket) => {
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
-			io.to(receiverSocket).emit('testsocket',  {s:s_id});
+			socket.emit('testsocket',  {s:s_id});
 		}       
 		catch(e){
-			io.to(receiverSocket).emit('testsocket', 'error');
+			socket.emit('testsocket', 'error');
 		}
 			
 	});
