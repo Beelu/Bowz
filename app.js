@@ -385,16 +385,26 @@ app.post("/deleteRoom/:id", (req, res) => {
 //開新房間
 app.post("/openRoom", (req, res) => {
 	randomID = Math.floor(Math.random() * 99999).toString();
+	while(allRooms.get(randomID)){
+		randomID = Math.floor(Math.random() * 99999).toString();
+	}
 
 	var Users = new Map();				//新增該房間使用者名單
-	console.log(req.body.roomID)
 	Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
 	room.findById(req.body.roomID, (err, findroom) => {
+		if(err){
+			return res.status(500).json({message:"database error"});
+		}
+
 		if(findroom.active){
 			res.json({message:"room already exist.", pinCode: findroom.nowRoomID});
 		}else{
+			var roundInfo = findroom.roundInfo;
+			for(var i=0; i<roundInfo.length; i++){
+				roundInfo[i]['record'] = [];
+			}
 			allRooms.set(randomID, {
-				round:findroom.roundInfo,
+				round:roundInfo,
 				interval: findroom.interval,
 				gameType:findroom.gameType,
 				roundTime:findroom.roundTime,
