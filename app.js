@@ -1051,11 +1051,11 @@ io.on('connection', (socket) => {
                 var chek_point = 1;
 		var used_times  = thisRoom.admin_transc_times;
                 var limit_times = data.limit_times;
-		
+		/*
 		if(payer_money==0){
 			allUsers.get(payer).money = 99999;
 		}
-		
+		*/
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
