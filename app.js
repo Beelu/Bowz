@@ -711,7 +711,7 @@ io.on('connection', (socket) => {
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
 					console.log("已在房間，僅連接socket");
-					socket.emit('enterRoom_resp',{msg:'已在房間，僅連接socket'});//回應enterRoom
+					socket.emit('enterRoom_resp',{msg:'已在房間，僅連接socket', user: thisUser});//回應enterRoom
 				}else{
 					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
