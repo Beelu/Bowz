@@ -971,7 +971,7 @@ io.on('connection', (socket) => {
 			io.sockets.to(s_id).emit('testsocket',  {s:s_id});
 		}       
 		catch(e){
-			socket.emit('testsocket', 'error');
+			io.sockets.to(s_id).emit('testsocket', 'error');
 		}
 			
 	});
@@ -983,6 +983,13 @@ io.on('connection', (socket) => {
   	*/
 	  socket.on('checkQRcode', (data) =>{
 		  
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+			
+		var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+		var payerSocket = payer.socketID;
+		var receiver_id = data.receiver_id;
+		  
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
@@ -991,11 +998,11 @@ io.on('connection', (socket) => {
 			var payerSocket = payer.socketID;
 			var receiver_id = data.receiver_id;
 			
-			socket.broadcast.to(payerSocket).emit('transCheckReq', receiver_id);
+			io.sockets.to(payerSocket).emit('transCheckReq', receiver_id);
 			
 		}       
 		catch(e){
-			io.sockets.in(thisRoom).emit('transCheckReq','checkQRcode error')
+			io.sockets.to(payerSocket).emit('transCheckReq','checkQRcode error')
 		}
 	
 
@@ -1024,10 +1031,10 @@ io.on('connection', (socket) => {
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
 
-			io.to(receiverSocket).emit('transcResp', chek_point);
+			io.sockets.to(receiverSocket).emit('transcResp', chek_point);
 		}
 		catch(e){
-			io.to(receiverSocket).emit('transcResp', 'get_chek_point error');
+			io.sockets.to(receiverSocket).emit('transcResp', 'get_chek_point error');
 		}
         });
 
@@ -1056,17 +1063,17 @@ io.on('connection', (socket) => {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
                                 thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: payer, price: money});
-                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
                         else{
                                 chek_point = -1;
-                                io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
 			}
                 }
                 catch(e){
                         chek_point = 0;
-                        io.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
+                        io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                 }
                 thisRoom.admin_transc_times = used_times;
         });
