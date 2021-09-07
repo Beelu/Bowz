@@ -1036,7 +1036,7 @@ io.on('connection', (socket) => {
         });
 
         //admin發送金錢
-        socket.on('set_admin_transc_req', data=>{
+        socket.on('set_admin_transc_req', (data)=>{
                 var thisRoom = allRooms.get(data.roomNum);//獲取房間id
                 var allUsers = thisRoom.Users;//獲取所有Users
 
