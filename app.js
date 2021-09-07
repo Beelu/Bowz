@@ -1041,7 +1041,7 @@ io.on('connection', (socket) => {
                 var allUsers = thisRoom.Users;//獲取所有Users
 
                 var thisRound = data.round//獲取本回合
-                var money = data.money;//交易金額
+                var money = Number(data.money);//交易金額
 
                 //var payer = data.payer_id//獲取付款者ID
 		//var payer_money = allUsers.get(payer).money
