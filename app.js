@@ -965,8 +965,8 @@ io.on('connection', (socket) => {
 		
 		try{
 			//test
-			var testid =  allUsers.get(String(234)).socketID;
-			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
+			//var testid =  allUsers.get(String(234)).socketID;
+			//socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
 			io.sockets.to(s_id).emit('testsocket',  {s:s_id});
 		}       
