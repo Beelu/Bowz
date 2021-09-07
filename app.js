@@ -1050,7 +1050,7 @@ io.on('connection', (socket) => {
 		
                 var chek_point = 1;
 		var used_times  = thisRoom.admin_transc_times;
-                var limit_times = data.limit_times;
+                var limit_times = Number(data.limit_times);
 		/*
 		if(payer_money==0){
 			allUsers.get(payer).money = 99999;
@@ -1059,7 +1059,7 @@ io.on('connection', (socket) => {
                 try {
                         if((used_times<limit_times)||(limit_times==-1)){
                                 receiver.money += money;
-                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: payer, price: money});
+                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: "admin", price: money});
                                 io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
