@@ -968,7 +968,7 @@ io.on('connection', (socket) => {
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
-			socket.emit('testsocket',  {s:s_id});
+			io.sockets.to(s_id).emit('testsocket',  {s:s_id});
 		}       
 		catch(e){
 			socket.emit('testsocket', 'error');
