@@ -981,6 +981,7 @@ io.on('connection', (socket) => {
   	* socket版本
   	*/
 	  socket.on('checkQRcode', (data) =>{
+		  
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
@@ -1009,9 +1010,9 @@ io.on('connection', (socket) => {
 
 		var payer = allUsers.get(data.payer_id);//獲取付款者ID	
 		var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
+		var receiverSocket = receiver.socketID;
 		
 		try{
-			var receiverSocket = receiver.socketID;
 			var chek_point = data.chek_point;
 
 			//交易成功寫入交易紀錄表
