@@ -994,7 +994,7 @@ io.on('connection', (socket) => {
 			
 		}       
 		catch(e){
-			io.sockets.in(thisRoom).emit('transCheckReq','error')
+			io.sockets.in(thisRoom).emit('transCheckReq','checkQRcode error')
 		}
 	
 
@@ -1026,7 +1026,7 @@ io.on('connection', (socket) => {
 			io.to(receiverSocket).emit('transcResp', chek_point);
 		}
 		catch(e){
-			io.to(receiverSocket).emit('transcResp', 'error');
+			io.to(receiverSocket).emit('transcResp', 'get_chek_point error');
 		}
         });
 
