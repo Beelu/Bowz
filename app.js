@@ -931,8 +931,8 @@ io.on('connection', (socket) => {
 	//===============高鵬雲部分====================//
 
 	/*掃到 QR code
-  *回傳收錢者的 目前金額
-  */
+	 *回傳收錢者的 目前金額
+	*/
 	/*
 	  app.post("/scanQRcode", function (req, res) {
 
@@ -968,10 +968,10 @@ io.on('connection', (socket) => {
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
 
-			io.to(s_id).emit('testsocket',  {s:s_id});
+			socket.broadcast.to(s_id).emit('testsocket',  {s:s_id});
 		}       
 		catch(e){
-			io.to(s_id).emit('testsocket', 'error');
+			socket.broadcast.to(s_id).emit('testsocket', 'error');
 		}
 			
 	});
