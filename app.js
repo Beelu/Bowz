@@ -1059,7 +1059,7 @@ io.on('connection', (socket) => {
                 try {
                         if((used_times<limit_times) || (limit_times==-1)){
                                 receiver.money += Number(money);
-                                thisRoom.round[Number(thisRound)].record.push(receiver);
+                                //thisRoom.round[Number(thisRound)].record.push(receiver);
                                 io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', chek_point);
                                 used_times+=1;
                         }
