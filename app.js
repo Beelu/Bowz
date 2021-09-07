@@ -848,7 +848,7 @@ io.on('connection', (socket) => {
 		
 	});
 
-	socket.on('shuffle',(req=>{
+	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
 			let roundNum = req.roundNum;
@@ -926,7 +926,7 @@ io.on('connection', (socket) => {
 		}catch(e){
 			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 		}
-	}))
+	});
 
 	//===============高鵬雲部分====================//
 
