@@ -933,16 +933,17 @@ io.on('connection', (socket) => {
 	/*掃到 QR code
   *回傳收錢者的 目前金額
   */
-  app.post("/scanQRcode", function (req, res) {
-    
+	/*
+	  app.post("/scanQRcode", function (req, res) {
 
-    var req_payer = req.body.user_id;//獲取收款人id
-    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id
-    var theseUsers = thisRoom.Users;//獲取房間所有user
-    var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
 
-    res.json(reciver_info.money);
-  });
+	    var req_payer = req.body.user_id;//獲取收款人id
+	    var thisRoom = allRooms.get(req.body.roomNum);//獲取房間id
+	    var theseUsers = thisRoom.Users;//獲取房間所有user
+	    var reciver_info = theseUsers.get(req_payer);//獲取收款人資料
+
+	    res.json(reciver_info.money);
+	  });*/
 
 	//test
 	socket.on('test', (data) => {
@@ -955,14 +956,14 @@ io.on('connection', (socket) => {
 	*紀錄User建立connerction後的socket物件
 	*/
 	socket.on('setSocket', (data)=>{
+		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var allUsers = thisRoom.Users;//獲取所有Users
+		var thisuser = allUsers.get(String(data.user_id));
+
+		thisuser.socketID = socket.id;
+		var s_id = thisuser.socketID;
+		
 		try{
-			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-			var allUsers = thisRoom.Users;//獲取所有Users
-			var thisuser = allUsers.get(String(data.user_id));
-
-			thisuser.socketID = socket.id;
-			var s_id = thisuser.socketID;
-
 			//test
 			var testid =  allUsers.get(String(234)).socketID;
 			socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
@@ -970,7 +971,7 @@ io.on('connection', (socket) => {
 			io.to(s_id).emit('testsocket',  {s:s_id});
 		}       
 		catch(e){
-			io.to(allUsers.get(String(data.user_id)).socketID).emit('testsocket', 'error');
+			io.to(s_id).emit('testsocket', 'error');
 		}
 			
 	});
