@@ -717,7 +717,7 @@ io.on('connection', (socket) => {
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					console.log("已進入房間並連接socket");
-					socket.emit('enterRoom_resp',{msg:'已進入房間並連接socket'});//回應enterRoom
+					socket.emit('enterRoom_resp',{msg:'已進入房間並連接socket', user: thisRoom.Users.get(data.ID)});//回應enterRoom
 				};
 			} else {
 				console.log("房間並不存在");
