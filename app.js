@@ -2,6 +2,7 @@ const { countReset } = require('console');
 const { Socket } = require('dgram');
 const { connect } = require('http2');
 const {MongoClient} = require('mongodb');
+const { decode } = require('querystring');
 const { all } = require('underscore');
 
 if (process.env.NODE_ENV !== "production") {
@@ -147,10 +148,10 @@ app.post("/login", function (req, res, next) {
 	passport.authenticate('local', function (err, user, info) {
 		if (err) { return next(err); }
 		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
-		req.logIn(user, function (err) {
+		req.logIn(user, { session: false }, function (err) {
 			if (err) { return next(err); }
 			var expiretime = Date.now() + 60 * 60 * 1000;
-			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '1h' })
+			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
 			res.json({ message: 'login success!', user: user, jwt: token, expiresIn: expiretime});
 		});
 	})(req, res, next);
@@ -708,11 +709,26 @@ app.post('/getRoomList', (req, res)=>{
 
 	
 //===================================socket.io=======================================//
+//連線驗證登入並重設jwt
+io.use(function(socket, next){
+	if (socket.handshake.query && socket.handshake.query.token){
+		jwt.verify(socket.handshake.query.token, 'ZaWarudo', function(err, decoded) {
+			if (err) return next(new Error('Authentication error'));
+			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			socket.handshake.query.token = token;
+			next();
+		});
+	}
+	else {
+		next(new Error('Authentication error'));
+	}    
+});
+
+//連線成功
 io.on('connection', (socket) => {
-
-
 	//進入房間
 	socket.on('enterRoom', (data) => {
+		var newToken = socket.handshake.query.token;
 		try{
 			var thisRoom = allRooms.get(data.roomNum);
 			if (thisRoom) {
@@ -720,12 +736,12 @@ io.on('connection', (socket) => {
 
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
-					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser});//回應enterRoom
+					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken});//回應enterRoom
 				}else{
 					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
-					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', user: thisRoom.Users.get(data.ID)});//回應enterRoom
+					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', user: thisUser, newToken: newToken});//回應enterRoom
 				};
 			} else {
 				socket.emit('enterRoom_resp',{status:2 , msg:'房間並不存在'});//回應enterRoom
