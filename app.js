@@ -724,6 +724,21 @@ app.post('/getRoomList', (req, res)=>{
 // 	}    
 // });
 
+io.use(function(socket, next){
+	if (socket.handshake.headers.authorization){
+		const auth_token = socket.handshake.headers.authorization.replace('Bearer ', '')
+		jwt.verify(auth_token, 'ZaWarudo', function(err, decoded) {
+			if (err) return next(new Error('Authentication error'));
+			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			socket.handshake.query.token = token;
+			next();
+		});
+	}
+	else {
+		next(new Error('Authentication error'));
+	}    
+});
+
 //連線成功
 io.on('connection', (socket) => {
 	//進入房間
@@ -763,7 +778,7 @@ io.on('connection', (socket) => {
 	//關閉房間(老師按按鈕)
 	socket.on('closeRoom', (data) => {
 		try{
-			io.to(data.roomNum).emit('get_out');
+			io.in(data.roomNum).emit('get_out');
 		}       
 		catch(e){
 		}
