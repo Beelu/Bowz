@@ -19,8 +19,7 @@
 <script>
   $(document).ready(function () {
     const socket = io.connect('https://localhost:3000', {
-        extraHeaders: { Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDQ3MTZlZjVjOTYxYTMxNTA4MGJjMTQiLCJlbWFpbCI6ImdhbmsyMzQ1NkBnbWFpbC5jb20iLCJpYXQiOjE2MzEwOTc4MjYsImV4cCI6MTYzMTEwNTAyNiwiaXNzIjoiRGlvIn0.9_N-ltuhkABW4GH5OK7QhMjnFRo1l_VLo6KJGyp9_-Q" }
-        // query: {token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDQ3MTZlZjVjOTYxYTMxNTA4MGJjMTQiLCJlbWFpbCI6ImdhbmsyMzQ1NkBnbWFpbC5jb20iLCJpYXQiOjE2MzEwODMxMjYsImV4cCI6MTYzMTA5MDMyNiwiaXNzIjoiRGlvIn0.zoYTCd7TU6ST3--4UwvUnHuJ2jZH5_KDWW9lzjBUHoo"}
+        query: {token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDQ3MTZlZjVjOTYxYTMxNTA4MGJjMTQiLCJlbWFpbCI6ImdhbmsyMzQ1NkBnbWFpbC5jb20iLCJpYXQiOjE2MzEwODMxMjYsImV4cCI6MTYzMTA5MDMyNiwiaXNzIjoiRGlvIn0.zoYTCd7TU6ST3--4UwvUnHuJ2jZH5_KDWW9lzjBUHoo"}
       });
 
     socket.on('connect', function () {
