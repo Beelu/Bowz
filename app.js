@@ -1048,8 +1048,8 @@ io.on('connection', (socket) => {
 
 			//交易成功寫入交易紀錄表
 			if(chek_point==1){
-				Number(receiver.money)+= Number(money);
-				Number(payer.money) -= Number(money);
+				receiver.money += Number(money);
+				payer.money -= Number(money);
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
