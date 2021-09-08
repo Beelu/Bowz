@@ -728,7 +728,7 @@ app.post('/getRoomList', (req, res)=>{
 io.on('connection', (socket) => {
 	//進入房間
 	socket.on('enterRoom', (data) => {
-		var newToken = socket.handshake.query.token;
+		var newToken = 'null'//socket.handshake.query.token;
 		try{
 			var thisRoom = allRooms.get(data.roomNum);
 			if (thisRoom) {
