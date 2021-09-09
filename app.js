@@ -101,7 +101,8 @@ var io = require("socket.io")(httpsServer, {
 	cors: {
 		origin: "https://lbdgame.mgt.ncu.edu.tw",
 		allowedHeaders: ["authorization"],
-		credentials: true
+		credentials: true,
+		allowEIO3: true
 	}
 })
 
