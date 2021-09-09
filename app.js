@@ -437,84 +437,6 @@ app.post("/getRoom", (req, res) => {
 	}
 })
 
-//====================startGame=======================
-app.post("/shuffle", (req, res) => {
-	
-	let thisRoom = allRooms.get(req.body.roomNum);
-	let roundNum = req.body.roundNum;
-	let saleMax = thisRoom.round[roundNum].saleMax;
-	let buyMax = thisRoom.round[roundNum].buyMax;
-	let saleMin = thisRoom.round[roundNum].saleMin;
-	let buyMin = thisRoom.round[roundNum].buyMin;
-	let ratio =  thisRoom.round[roundNum].ratio/100;
-	let total = thisRoom.total; 
-	let interval = thisRoom.interval;
-	let restrict;//紀錄買家賣家何者較少
-	let tcount = 0; //計已分配的總數量
-	let rantmp = 0; //用來隨機分配的參數
-
-	if(thisRoom.isGaming == true){
-		res.json({msg:'error'})
-	}else{
-
-	let sellerNum = Math.round(ratio * total)
-	let buyerNum = total-sellerNum
-
-	if(sellerNum>=buyerNum){
-		restrict = buyerNum;
-	}else{
-		restrict = sellerNum;
-	}
-		// 分配身份的步驟：假設有12人 buyer:5 seller:7 
-		// 1.先分配10個人分別五五買賣 2.再分配兩個seller
-		thisRoom.Users.forEach(function(value,key) {
-
-			//上述的步驟一在if內完成，步驟二在else內完成
-			if(tcount<restrict*2){
-				if(tcount%2==0){
-					rantmp = Math.floor(Math.random() * 2)
-				}
-				switch(rantmp){
-					case 0:
-						money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-						money = interval * Math.ceil(money/interval)
-						value.role = 'seller' 
-						value.price = money 
-						rantmp=1
-						break;
-					case 1:
-						money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-						money = interval * Math.ceil(money/interval)
-						value.role = 'buyer' 
-						value.price = money
-						rantmp=0
-						break;
-				}
-				tcount++;
-				thisRoom.Users.set(key,value)
-			}else{
-				if(sellerNum>buyerNum){
-					money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-					money = interval * Math.ceil(money/interval)
-					value.role = 'seller' 
-					value.price = money 
-				}else{
-					money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-					money = interval * Math.ceil(money/interval)
-					value.role = 'buyer' 
-					value.price = money
-					rantmp=0
-				}
-				
-				tcount++;
-				thisRoom.Users.set(key,value)
-			}
-		});
-		allRooms.set(req.body.roomNum, thisRoom);
-		res.json({ userData: Array.from(thisRoom.Users),roomDetail:thisRoom});
-	}
-});
-
 app.post('/chartData',(req,res)=>{
 
 	let buyerMoneyData = [];
@@ -891,13 +813,14 @@ io.on('connection', (socket) => {
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
+			thisRoom.Users.delete(req.teacherID)
 			let roundNum = req.roundNum;
 			let saleMax = thisRoom.round[roundNum].saleMax;
 			let buyMax = thisRoom.round[roundNum].buyMax;
 			let saleMin = thisRoom.round[roundNum].saleMin;
 			let buyMin = thisRoom.round[roundNum].buyMin;
 			let ratio =  thisRoom.round[roundNum].ratio/100;
-			let total = thisRoom.total; 
+			let total = thisRoom.Users.size; 
 			let interval = thisRoom.interval;
 			let restrict;//紀錄買家賣家何者較少
 			let tcount = 0; //計已分配的總數量
@@ -960,6 +883,7 @@ io.on('connection', (socket) => {
 						thisRoom.Users.set(key,value)
 					}
 				});
+				thisRoom.total = thisRoom.total - 1
 				allRooms.set(req.body.roomNum, thisRoom);
 				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
