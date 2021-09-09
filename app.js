@@ -865,7 +865,7 @@ io.on('connection', (socket) => {
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
-			thisRoom.Users.delete(req.teacherID)
+			//thisRoom.Users.delete(req.teacherID)
 			let roundNum = req.roundNum;
 			let saleMax = thisRoom.round[roundNum].saleMax;
 			let buyMax = thisRoom.round[roundNum].buyMax;
@@ -935,7 +935,7 @@ io.on('connection', (socket) => {
 						thisRoom.Users.set(key,value)
 					}
 				});
-				thisRoom.total = thisRoom.total - 1
+				//thisRoom.total = thisRoom.total - 1
 				allRooms.set(req.body.roomNum, thisRoom);
 				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
