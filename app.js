@@ -166,7 +166,8 @@ app.post("/promotion", function(req, res){
 	})
 })
 
-//註冊實作
+
+//註冊驗證
 app.post("/register", function (req, res) {
 	var newuser = new user({
 		schoolname: req.body.schoolname,
@@ -248,13 +249,13 @@ app.post("/forget", (req, res) => {
 			var transport = nodemailer.createTransport({
 				service: "Gmail",
 				auth: {
-					user: "gankgank8787@gmail.com",
+					user: "lbdgame.service@gmail.com",
 					pass: process.env.appPW
 				},
 			});
 			var content = {
 				to: founduser.email,
-				from: "gankgank8787@gmail.com",
+				from: "lbdgame",
 				subject: "Reset Password",
 				text: "click the link below to reset you password.\n https://lbdgame.mgt.ncu.edu.tw/forgetpassword2?token=" + token
 			}
