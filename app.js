@@ -1001,7 +1001,91 @@ io.on('connection', (socket) => {
 			io.sockets.to(receiverSocket).emit('transcResp', 'get_chek_point error');
 		}
         });
+	
+	/*
+	*直接依ID匯款
+	*/
 
+	//付款方匯款發送要求，傳給收款方
+	socket.on('send_transc_req', (data) =>{
+			
+		try{	
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+
+			if(thisRoom){
+				var allUsers = thisRoom.Users;//獲取所有Users
+
+				if(allUsers){
+					var receiver = allUsers.get(String(data.receiver_id))//獲取付款者ID
+					var receiverSocket = receiver.socketID;
+
+					var money = data.transc_money;
+					
+					io.sockets.to(receiverSocket).emit('transCheckReq', {payer_id : data.payer_id, transc_money: money});		
+				}
+			}		
+		}       
+		catch(e){
+			io.sockets.to(socket.id).emit('transc_error_handle','checkQRcode error')
+		}
+	});
+
+	//聽取收款方收款
+	socket.on('send_chek_point', (data) =>{
+
+		try{
+			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+
+			if(thisRoom){
+				var allUsers = thisRoom.Users;//獲取所有Users
+
+				if(all_Users){
+					var payer = allUsers.get(data.payer_id);//獲取付款者ID	
+					var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
+
+					if(payer && receiver){
+						//var receiverSocket = receiver.socketID;
+						var payer_Socket = payer_socketID;
+						var money = data.transc_money;//交易金額
+						var chek_point = data.chek_point;
+							
+						//交易成功寫入交易紀錄表
+						if(chek_point==1){
+							receiver.money += Number(money);
+							payer.money -= Number(money);
+							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+						}
+
+						io.sockets.to(payer_Socket).emit('payer_transcResp', chek_point);
+						//io.sockets.to(receiverSocket).emit('receiver_transcResp', chek_point);
+							
+					}else{
+						io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+					}
+				}else{
+					io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+				}
+			}else{
+				io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+			}
+		}
+		catch(e){
+			//錯誤回傳
+			io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+			try{				
+				if(payer_Socket){
+					io.sockets.to(payer_Socket).emit('transc_error_handle', 'transc error');
+				}
+			}
+			catch(er){
+				console(er);
+			}
+		}
+	});
+
+
+		
         //admin發送金錢
         socket.on('set_admin_transc_req', (data)=>{
                 var thisRoom = allRooms.get(data.roomNum);//獲取房間id
