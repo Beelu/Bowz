@@ -427,7 +427,7 @@ app.post("/openRoom", (req, res) => {
 	}
 
 	var Users = new Map();				//新增該房間使用者名單
-	//Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
+	Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
 	room.findById(req.body.roomID, (err, findroom) => {
 		if(err){
 			return res.status(500).json({message:"database error"});
@@ -447,7 +447,6 @@ app.post("/openRoom", (req, res) => {
 				roundTime:findroom.roundTime,
 				roomName: findroom.roomName,
 				initMoney: findroom.initMoney,
-				roomOwner: { ID: req.body.ID, username: req.body.name, isManager: true },
 				Users:Users,
 				nowRound:-1,
 				isGaming: false,
