@@ -923,7 +923,7 @@ io.on('connection', (socket) => {
 					}
 				});
 				//thisRoom.total = thisRoom.total - 1
-				allRooms.set(req.body.roomNum, thisRoom);
+				allRooms.set(req.roomNum, thisRoom);
 				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
 		}catch(e){
