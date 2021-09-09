@@ -100,7 +100,8 @@ var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer, {
 	cors: {
 		origin: "https://lbdgame.mgt.ncu.edu.tw",
-		methods: ["GET", "POST"]
+		allowedHeaders: ["authorization"],
+		credentials: true
 	}
 })
 
@@ -178,9 +179,7 @@ app.post("/register", function (req, res) {
 		if (err) {
 			return res.status(500).json({ message: "error", detail: err });
 		}
-		req.logIn(user, (err) => {					//自動登入
-			res.json({ message: "Successfully register, automatically login." });
-		});
+		res.json({ message: "Successfully register." });
 	});
 });
 
@@ -391,7 +390,7 @@ app.post("/openRoom", (req, res) => {
 	}
 
 	var Users = new Map();				//新增該房間使用者名單
-	Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
+	//Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
 	room.findById(req.body.roomID, (err, findroom) => {
 		if(err){
 			return res.status(500).json({message:"database error"});
@@ -411,6 +410,7 @@ app.post("/openRoom", (req, res) => {
 				roundTime:findroom.roundTime,
 				roomName: findroom.roomName,
 				initMoney: findroom.initMoney,
+				roomOwner: { ID: req.body.ID, username: req.body.name, isManager: true },
 				Users:Users,
 				nowRound:-1,
 				isGaming: false,
@@ -724,6 +724,22 @@ app.post('/getRoomList', (req, res)=>{
 // 	}    
 // });
 
+// io.use(function(socket, next){
+// 	var tk = socket.handshake.headers.authorization.replace('Bearer ', '');
+// 	if (tk){
+// 		jwt.verify(tk, 'ZaWarudo', function(err, decoded) {
+// 			if (err) return next(new Error('Authentication error'));
+// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+// 			socket.handshake.query.token = token;
+// 			console.log(token)
+// 			next();
+// 		});
+// 	}
+// 	else {
+// 		next(new Error('Authentication error'));
+// 	}    
+// });
+
 //連線成功
 io.on('connection', (socket) => {
 	//進入房間
@@ -741,7 +757,7 @@ io.on('connection', (socket) => {
 					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
-					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', user: thisUser, newToken: newToken});//回應enterRoom
+					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
 				};
 			} else {
 				socket.emit('enterRoom_resp',{status:2 , msg:'房間並不存在'});//回應enterRoom
