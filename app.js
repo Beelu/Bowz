@@ -682,21 +682,21 @@ app.post('/getRoomList', (req, res)=>{
 // 	}    
 // });
 
-// io.use(function(socket, next){
-// 	var tk = socket.handshake.headers.authorization.replace('Bearer ', '');
-// 	if (tk){
-// 		jwt.verify(tk, 'ZaWarudo', function(err, decoded) {
-// 			if (err) return next(new Error('Authentication error'));
-// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
-// 			socket.handshake.query.token = token;
-// 			console.log(token)
-// 			next();
-// 		});
-// 	}
-// 	else {
-// 		next(new Error('Authentication error'));
-// 	}    
-// });
+io.use(function(socket, next){
+	var tk = socket.handshake.headers.authorization.replace('Bearer ', '');
+	if (tk){
+		jwt.verify(tk, 'ZaWarudo', function(err, decoded) {
+			if (err) return next(new Error('Authentication error'));
+			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			socket.handshake.query.token = token;
+			console.log(token)
+			next();
+		});
+	}
+	else {
+		next(new Error('Authentication error'));
+	}    
+});
 
 //連線成功
 io.on('connection', (socket) => {
