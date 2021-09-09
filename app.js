@@ -455,7 +455,6 @@ app.post("/shuffle", (req, res) => {
 	if(thisRoom.isGaming == true){
 		res.json({msg:'error'})
 	}else{
-
 		let sellerNum = Math.round(ratio * total)
 		let buyerNum = total-sellerNum
 
@@ -467,46 +466,48 @@ app.post("/shuffle", (req, res) => {
 		// 分配身份的步驟：假設有12人 buyer:5 seller:7 
 		// 1.先分配10個人分別五五買賣 2.再分配兩個seller
 		thisRoom.Users.forEach(function(value,key) {
-			
-			//上述的步驟一在if內完成，步驟二在else內完成
-			if(tcount<restrict*2){
-				if(tcount%2==0){
-					rantmp = Math.floor(Math.random() * 2)
-				}
-				switch(rantmp){
-					case 0:
+			if (value.isManager == true){}
+			else{
+				//上述的步驟一在if內完成，步驟二在else內完成
+				if(tcount<restrict*2){
+					if(tcount%2==0){
+						rantmp = Math.floor(Math.random() * 2)
+					}
+					switch(rantmp){
+						case 0:
+							money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
+							money = interval * Math.ceil(money/interval)
+							value.role = 'seller' 
+							value.price = money 
+							rantmp=1
+							break;
+						case 1:
+							money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
+							money = interval * Math.ceil(money/interval)
+							value.role = 'buyer' 
+							value.price = money
+							rantmp=0
+							break;
+					}
+					tcount++;
+					thisRoom.Users.set(key,value)
+				}else{
+					if(sellerNum>buyerNum){
 						money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
 						money = interval * Math.ceil(money/interval)
 						value.role = 'seller' 
 						value.price = money 
-						rantmp=1
-						break;
-					case 1:
+					}else{
 						money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
 						money = interval * Math.ceil(money/interval)
 						value.role = 'buyer' 
 						value.price = money
 						rantmp=0
-						break;
+					}
+					
+					tcount++;
+					thisRoom.Users.set(key,value)
 				}
-				tcount++;
-				thisRoom.Users.set(key,value)
-			}else{
-				if(sellerNum>buyerNum){
-					money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-					money = interval * Math.ceil(money/interval)
-					value.role = 'seller' 
-					value.price = money 
-				}else{
-					money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-					money = interval * Math.ceil(money/interval)
-					value.role = 'buyer' 
-					value.price = money
-					rantmp=0
-				}
-				
-				tcount++;
-				thisRoom.Users.set(key,value)
 			}
 		});
 		allRooms.set(req.body.roomNum, thisRoom);
