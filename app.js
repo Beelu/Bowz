@@ -82,20 +82,20 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
 
 //https
-var options = {
-	key: fs.readFileSync('./server-key.pem'),
-	ca: [fs.readFileSync('./cert.pem')],
-	cert: fs.readFileSync('./server-cert.pem')
-};
+// var options = {
+// 	key: fs.readFileSync('./server-key.pem'),
+// 	ca: [fs.readFileSync('./cert.pem')],
+// 	cert: fs.readFileSync('./server-cert.pem')
+// };
 
 // Certificate
-// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-// const options = {
-// 	key: privateKey,
-// 	cert: certificate,
-// 	ca: certificate
-// };
+const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+const options = {
+	key: privateKey,
+	cert: certificate,
+	ca: certificate
+};
 var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer, {
 	cors: {
