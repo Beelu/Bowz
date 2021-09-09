@@ -456,18 +456,18 @@ app.post("/shuffle", (req, res) => {
 		res.json({msg:'error'})
 	}else{
 
-		let sellerNum = Math.round(ratio * total)
-		let buyerNum = total-sellerNum
+	let sellerNum = Math.round(ratio * total)
+	let buyerNum = total-sellerNum
 
-		if(sellerNum>=buyerNum){
-			restrict = buyerNum;
-		}else{
-			restrict = sellerNum;
-		}
+	if(sellerNum>=buyerNum){
+		restrict = buyerNum;
+	}else{
+		restrict = sellerNum;
+	}
 		// 分配身份的步驟：假設有12人 buyer:5 seller:7 
 		// 1.先分配10個人分別五五買賣 2.再分配兩個seller
 		thisRoom.Users.forEach(function(value,key) {
-			
+
 			//上述的步驟一在if內完成，步驟二在else內完成
 			if(tcount<restrict*2){
 				if(tcount%2==0){
@@ -1101,7 +1101,7 @@ io.on('connection', (socket) => {
                 try {
                         if((used_times<limit_times) || (limit_times==-1)){
                                 receiver.money += Number(money);
-                                thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+                                //thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
                                 io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
                                 used_times+=1;
                         }
