@@ -82,20 +82,20 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
 
 //https
-// var options = {
-// 	key: fs.readFileSync('./server-key.pem'),
-// 	ca: [fs.readFileSync('./cert.pem')],
-// 	cert: fs.readFileSync('./server-cert.pem')
-// };
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
+};
 
 // Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-const options = {
-	key: privateKey,
-	cert: certificate,
-	ca: certificate
-};
+// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+// const options = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: certificate
+// };
 var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer, {
 	cors: {
@@ -166,56 +166,6 @@ app.post("/promotion", function(req, res){
 	})
 })
 
-//註冊寄信
-app.post("/register_email", (req, res) => {
-	async.waterfall([
-		//第一步-先產生隨機token
-		function (done) {
-			crypto.randomBytes(20, function (err, buf) {
-				var token = buf.toString('hex');		//對buf進行編碼產生token
-				done(err, token);
-			});
-		},
-		//第二步-找到該使用者並設定其token和過期時間
-		function (token, done) {
-			user.findOne({ email: req.body.email }, function (err, founduser) {
-				if (!founduser) {
-					return res.status(404).json({ message: "error, user doesn't exist." });
-				}
-
-				founduser.resetPWtoken = token;
-				founduser.resetPWexpires = Date.now() + 3600000;  //1小時
-
-				founduser.save((err) => {
-					done(err, token, founduser);
-				});
-			});
-		},//第三步-寄email
-		function (token, founduser, done) {
-			var transport = nodemailer.createTransport({
-				service: "Gmail",
-				auth: {
-					user: "gankgank8787@gmail.com",
-					pass: process.env.appPW
-				},
-			});
-			var content = {
-				to: founduser.email,
-				from: "gankgank8787@gmail.com",
-				subject: "Reset Password",
-				text: "click the link below to reset you password.\n https://lbdgame.mgt.ncu.edu.tw/forgetpassword2?token=" + token
-			}
-			transport.sendMail(content, (err) => {
-				console.log("email has been send to " + user.email + ", please check with further instruction.");
-				done(err, "done");
-			});
-		},//最後的錯誤處理
-		function (err) {
-			res.json({ message: "done", detail: err });
-		}
-	]);
-});
-
 //註冊驗證
 app.post("/register", function (req, res) {
 	var newuser = new user({
@@ -229,9 +179,43 @@ app.post("/register", function (req, res) {
 		if (err) {
 			return res.status(500).json({ message: "error", detail: err });
 		}
-		res.json({ message: "Successfully register." });
+		req.logIn(user, { session: false }, function (err) {
+			if (err) { return next(err); }
+			reg_email(req.body.email);
+			var expiretime = Date.now() + 60 * 60 * 1000;
+			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			res.json({ message: "Successfully register.", user: user, jwt: token, expiresIn: expiretime});
+		});
 	});
 });
+
+//註冊成功寄信
+function reg_email(user_email){
+	async.waterfall([
+		function (done) {
+			var transport = nodemailer.createTransport({
+				service: "Gmail",
+				auth: {
+					user: "lbdgame.service@gmail.com",
+					pass: process.env.appPW
+				},
+			});
+			var content = {
+				to: user_email,
+				from: "lbdgame",
+				subject: "registration success",
+				text: "you can click the link below to go to the gamelobby.\n https://lbdgame.mgt.ncu.edu.tw"
+			}
+			transport.sendMail(content, (err) => {
+				console.log("email has been send to " + user_email + ", please check with further instruction.");
+				done(err, "done");
+			});
+		},//最後的錯誤處理
+		function (err) {
+			res.json({ message: "done", detail: err });
+		}
+	]);
+}
 
 //房間頁面
 app.get("/room/:id", function (req, res) {
