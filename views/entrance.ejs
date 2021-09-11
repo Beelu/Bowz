@@ -31,6 +31,13 @@
         console.log(data);
       })
 
+      // socket.on('unauthorized', (error) => {
+      //   if (error.data.type == 'UnauthorizedError' || error.data.code == 'invalid_token') {
+      //     // redirect user to login page perhaps?
+      //     console.log('User token has expired');
+      //   }
+      // });
+
       //開新房間
       $('#openRoom').click(function () {
         var socket = io();

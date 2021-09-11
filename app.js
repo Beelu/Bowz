@@ -32,6 +32,7 @@ var express = require("express"),
 	cors = require("cors"),
 	randomNormal = require('random-normal');
 	jwt = require("jsonwebtoken"),
+	socketioJwt = require("socketio-jwt");
 	lodash = require("lodash")
 
 
@@ -700,6 +701,12 @@ app.post('/getRoomList', (req, res)=>{
 // 	}    
 // });
 
+io.use(socketioJwt.authorize({
+	secret: "ZaWarudo",
+	handshake: true,
+	auth_header_required: true
+}));
+
 //連線成功
 io.on('connection', (socket) => {
 	//進入房間
@@ -717,6 +724,9 @@ io.on('connection', (socket) => {
 				if(thisUser){
 					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken});//回應enterRoom
 				}else{
+					if(thisRoom.isGaming){
+						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
+					}
 					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
