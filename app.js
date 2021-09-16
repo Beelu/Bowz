@@ -1340,20 +1340,28 @@ httpsServer.listen(3000, process.env.IP, function () {
 process.on('uncaughtException', function (err) {
 
 	try{
-
+		const debug_log = 'debug.log';
 		var now = new Date(); 
 		var datetime = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate(); 
-		  datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
+	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
 
-		var log2file = function (v) {
-			log_file.write(util.format(v) + '\n');
-		};
-
-		if(!log_file){
-			var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags: 'w'});
+		var error_message = util.format(datetime+'->'+err) + '\n'
+	
+		if(fs.access(debug_log)){
+			fs.writeFile(debug_log, error_message, function (err) {
+				if (err)
+					console.log(err);
+				else
+					console.log('Write operation complete.');
+			});
+		}else{
+			fs.appendFile(debug_log, error_message, function (err) {
+				if (err)
+					console.log(err);
+				else
+					console.log('Append operation complete.');
+			});
 		}
-
-		log2file(datetime+'->'+err);
 
 	}catch(e){
 		console.log(e);
