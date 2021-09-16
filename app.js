@@ -1335,7 +1335,7 @@ httpsServer.listen(3000, process.env.IP, function () {
 	console.log("Server Start!");
 });
 
-
+/*
 // uncaughtException 最後一道防線。 
 process.on('uncaughtException', function (err) {
 
@@ -1358,7 +1358,7 @@ process.on('uncaughtException', function (err) {
 	}
 	
 });
-
+*/
 /*
 房間暫存參數(Map):
 		allRooms[房間ID:int]{
