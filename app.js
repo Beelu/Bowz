@@ -1348,10 +1348,10 @@ process.on('uncaughtException', function (err) {
 		var log_file = fs.createWriteStream('debug.log', {flags : 'w'});
 		var log_stdout = process.stdout;
 
-		console.log = function() { //
+		
 			log_file.write(util.format(error_message) + '\n');
 			log_stdout.write(util.format(error_message) + '\n');
-		};
+		
 
 	}catch(e){
 		console.log(e);
