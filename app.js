@@ -1340,7 +1340,7 @@ httpsServer.listen(3000, process.env.IP, function () {
 process.on('uncaughtException', function (err) {
 
 	try{
-		const debug_log = __dirname+'\debug.log';
+		const debug_log = __dirname+'/debug.log';
 		var now = new Date(); 
 		var datetime = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate(); 
 	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
