@@ -21,7 +21,7 @@ var express = require("express"),
 	server = require("http").Server(app),
 	https = require('https'),
 	//io = require("socket.io")(server),
-	path = require("path");
+	path = require("path"),
 	middleware = require("./middleware"),
 	user = require("./models/user"),
 	transaction = require('./models/transaction'),
@@ -31,10 +31,11 @@ var express = require("express"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
 	cors = require("cors"),
-	randomNormal = require('random-normal');
+	randomNormal = require('random-normal'),
 	jwt = require("jsonwebtoken"),
-	socketioJwt = require("socketio-jwt");
-	lodash = require("lodash")
+	socketioJwt = require("socketio-jwt"),
+	lodash = require("lodash"),
+	util = require('util');
 
 
 //房間所需要之暫存變數
@@ -1337,7 +1338,27 @@ httpsServer.listen(3000, process.env.IP, function () {
 
 // uncaughtException 最後一道防線。 
 process.on('uncaughtException', function (err) {
-    console.log(err);
+
+	try{
+
+		var now = new Date(); 
+		var datetime = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate(); 
+		  datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
+
+		var log2file = function (v) {
+			log_file.write(util.format(v) + '\n');
+		};
+
+		if(!log_file){
+			var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags: 'w'});
+		}
+
+		log2file(datetime+'->'+err);
+
+	}catch(e){
+		console.log(e);
+	}
+	
 });
 
 /*
