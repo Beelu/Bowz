@@ -1345,7 +1345,7 @@ process.on('uncaughtException', function (err) {
 	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
 
 		var error_message = util.format(datetime+'->'+err) + '\n'
-		var log_file = fs.createWriteStream('debug.log', {flags : 'w'});
+		var log_file = fs.createWriteStream('debug.txt', {flags : 'w'});
 		var log_stdout = process.stdout;
 
 		
