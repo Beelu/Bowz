@@ -1340,37 +1340,18 @@ httpsServer.listen(3000, process.env.IP, function () {
 process.on('uncaughtException', function (err) {
 
 	try{
-		const debug_log = 'debug.log';
 		var now = new Date(); 
 		var datetime = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate(); 
 	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
 
 		var error_message = util.format(datetime+'->'+err) + '\n'
-		fs.writeFile(debug_log, error_message, function (wf_err) {
-			if (wf_err)
-				console.log(wf_err);
-			else
-				console.log('Write operation complete.');
-		});
-		/*
-		// Check if the file exists in the current directory, and if it is writable.
-		fs.access(file, constants.F_OK | constants.W_OK, (access_er) => {
-			if (access_er) {
-				fs.writeFile(debug_log, error_message, function (wf_err) {
-					if (wf_err)
-						console.log(wf_err);
-					else
-						console.log('Write operation complete.');
-				});
-			} else {
-				fs.appendFile(debug_log, error_message, function (app_err) {
-					if (app_err)
-						console.log(app_err);
-					else
-						console.log('Append operation complete.');
-				})
-			}
-		});*/
+		var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
+		var log_stdout = process.stdout;
+
+		console.log = function() { //
+			log_file.write(util.format(error_message) + '\n');
+			log_stdout.write(util.format(error_message) + '\n');
+		};
 
 	}catch(e){
 		console.log(e);
