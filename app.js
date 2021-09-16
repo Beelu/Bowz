@@ -1334,21 +1334,12 @@ httpsServer.listen(3000, process.env.IP, function () {
 	console.log("Server Start!");
 });
 
-/*
+
 // uncaughtException 最後一道防線。 
 process.on('uncaughtException', function (err) {
     console.log(err);
-    try {
-        var killTimer = setTimeout(function () {
-            process.exit(1);
-        }, 30000);
-        killTimer.unref();
-        server.close();
-    } catch (e) {
-        console.log('error when exit', e.stack);
-    }
 });
-*/
+
 /*
 房間暫存參數(Map):
 		allRooms[房間ID:int]{
