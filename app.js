@@ -1346,7 +1346,13 @@ process.on('uncaughtException', function (err) {
 	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
 
 		var error_message = util.format(datetime+'->'+err) + '\n'
-		
+		fs.writeFile(debug_log, error_message, function (wf_err) {
+			if (wf_err)
+				console.log(wf_err);
+			else
+				console.log('Write operation complete.');
+		});
+		/*
 		// Check if the file exists in the current directory, and if it is writable.
 		fs.access(file, constants.F_OK | constants.W_OK, (access_er) => {
 			if (access_er) {
@@ -1364,7 +1370,7 @@ process.on('uncaughtException', function (err) {
 						console.log('Append operation complete.');
 				})
 			}
-		});
+		});*/
 
 	}catch(e){
 		console.log(e);
