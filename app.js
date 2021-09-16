@@ -723,6 +723,7 @@ io.on('connection', (socket) => {
 
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
+
 					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
@@ -732,6 +733,9 @@ io.on('connection', (socket) => {
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
+					if(true){
+						throw new Error(`出錯了`);
+					}
 				};
 			} else {
 				socket.emit('enterRoom_resp',{status:2 , msg:'房間並不存在'});//回應enterRoom
