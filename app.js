@@ -524,7 +524,7 @@ app.post("/downloadCSV", (req,res) => {
 				csv_data = "玩家編號,分數 \r\n";
 
 				function logAllUsersElements(value, key, map) {
-					csv_data= csv_data+key+","+value+"\r\n";
+					csv_data= csv_data+key+","+value.score+"\r\n";
 				}				
 				allUsers.forEach(logAllUsersElements)
 			}else{//房間沒有玩家存在
