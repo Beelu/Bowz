@@ -509,6 +509,12 @@ app.post("/totalChartData", (req,res) => {
 	res.json({data:data});
 })
 
+app.post("/downloadCSV", (req,res) => {
+	//let data = totalChartData.get(req.body.roomNum);
+	let msg = "hi,somn_csv";
+	res.json({data:msg});
+})
+
 app.post("/changeSingleMoney", (req,res) => {
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let index = req.body.index
