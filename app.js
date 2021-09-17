@@ -510,9 +510,34 @@ app.post("/totalChartData", (req,res) => {
 })
 
 app.post("/downloadCSV", (req,res) => {
-	//let data = totalChartData.get(req.body.roomNum);
-	let msg = "hi,somn_csv";
-	res.json({data:msg});
+	let csv_data = null;
+	let msg;
+
+	try{
+		let RoomNum = req.body.roomNum;
+		let thisRoom = allRooms.get(RoomNum);
+
+		if(thisRoom){
+			let allUsers = thisRoom.Users;
+
+			if(allUsers){
+				
+				csv_data = "玩家編號,分數 \r\n";
+				//allUsers.forEach{}
+			}else{//房間沒有玩家存在
+				msg = "房間沒有玩家存在";
+			}
+
+		}else{//房間不存在
+			msg = "房間不存在";
+		}
+
+		res.json({data:csv_data, msg:msg});
+	}catch(e){
+		msg = "未知的錯誤";
+		res.json({data:csv_data, msg:msg});
+	}
+
 })
 
 app.post("/changeSingleMoney", (req,res) => {
@@ -746,10 +771,6 @@ io.on('connection', (socket) => {
 			}
 		}catch(e){
 			socket.emit('enterRoom_resp',{status:-1, msg:'error'});//回應enterRoom
-		}finally{
-			if(true){
-				throw new Error(`出錯了`);
-			}
 		}
 	});
 
