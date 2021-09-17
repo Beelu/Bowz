@@ -521,9 +521,12 @@ app.post("/downloadCSV", (req,res) => {
 			let allUsers = thisRoom.Users;
 
 			if(allUsers){
-				
-				csv_data = "玩家編號,分數 \r\n 玩家編號,分數";
-				//allUsers.forEach{}
+				csv_data = "玩家編號,分數 \r\n";
+
+				function logAllUsersElements(value, key, map) {
+					csv_data= csv_data+key+","+value+"\r\n";
+				}				
+				allUsers.forEach(logAllUsersElements)
 			}else{//房間沒有玩家存在
 				msg = "房間沒有玩家存在";
 			}
