@@ -522,7 +522,7 @@ app.post("/downloadCSV", (req,res) => {
 
 			if(allUsers){
 				
-				csv_data = "玩家編號,分數 \r\n";
+				csv_data = "玩家編號,分數 \r\n 玩家編號,分數";
 				//allUsers.forEach{}
 			}else{//房間沒有玩家存在
 				msg = "房間沒有玩家存在";
