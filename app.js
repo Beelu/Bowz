@@ -1070,7 +1070,7 @@ io.on('connection', (socket) => {
 		var allUsers = thisRoom.Users;//獲取所有Users
 
 		var thisRound = data.round;//獲取本回合
-		var money = data.money;//交易金額
+		var money = Number(data.money);//交易金額
 
 		var payer = allUsers.get(data.payer_id);//獲取付款者ID	
 		var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
@@ -1140,7 +1140,7 @@ io.on('connection', (socket) => {
 					if(payer && receiver){
 						//var receiverSocket = receiver.socketID;
 						var payer_Socket = payer.socketID;
-						var money = data.transc_money;//交易金額
+						var money = data.money;//交易金額
 						var chek_point = data.chek_point;
 						var thisRound = data.round;
 							
