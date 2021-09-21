@@ -1133,7 +1133,7 @@ io.on('connection', (socket) => {
 			if(thisRoom){
 				var allUsers = thisRoom.Users;//獲取所有Users
 
-				if(all_Users){
+				if(allUsers){
 					var payer = allUsers.get(data.payer_id);//獲取付款者ID	
 					var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
 
