@@ -1084,7 +1084,7 @@ io.on('connection', (socket) => {
 				receiver.money += Number(money);
 				receiver.score += (Number(money) - Number(receiver.price));
 				payer.money -= Number(money);
-				payer.score += (Number(receiver.price) - Number(money));
+				payer.score += (Number(payer.price) - Number(money));
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
@@ -1150,7 +1150,7 @@ io.on('connection', (socket) => {
 							payer.money -= Number(money);
 							
 							let rec_score = (Number(money) - Number(receiver.price));
-							let pay_score = (Number(receiver.price) - Number(money));
+							let pay_score = (Number(payer.price) - Number(money));
 							
 							receiver.score += rec_score;							
 							payer.score += pay_score;
