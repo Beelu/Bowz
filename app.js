@@ -1139,7 +1139,7 @@ io.on('connection', (socket) => {
 
 					if(payer && receiver){
 						//var receiverSocket = receiver.socketID;
-						var payer_Socket = payer_socketID;
+						var payer_Socket = payer.socketID;
 						var money = data.transc_money;//交易金額
 						var chek_point = data.chek_point;
 							
@@ -1157,13 +1157,13 @@ io.on('connection', (socket) => {
 						//io.sockets.to(receiverSocket).emit('receiver_transcResp', chek_point);
 							
 					}else{
-						io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+						io.sockets.to(socket.id).emit('transc_error_handle', '不存在的交易對象');
 					}
 				}else{
-					io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+					io.sockets.to(socket.id).emit('transc_error_handle', '沒有人在房間');
 				}
 			}else{
-				io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+				io.sockets.to(socket.id).emit('transc_error_handle', '房間不存在');
 			}
 		}
 		catch(e){
