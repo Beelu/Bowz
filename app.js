@@ -154,7 +154,7 @@ app.post("/login", function (req, res, next) {
 		req.logIn(user, { session: false }, function (err) {
 			if (err) { return next(err); }
 			var expiretime = Date.now() + 60 * 60 * 1000;
-			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '3h' })
 			res.json({ message: 'login success!', user: user, jwt: token, expiresIn: expiretime});
 		});
 	})(req, res, next);
@@ -578,7 +578,7 @@ app.post("/changeRoleMoney", (req,res) => {
 
 //===========遊戲後儲存歷史資料===============
 app.post('/closeRoom', (req, res) => {
-	room.findById(req.body.roomID, (err, findroom) => {
+	room.findOne({nowRoomID: req.body.roomID}, (err, findroom) => {
 		if(err){
 			res.json({message:"something got wrong."})
 		}else{
