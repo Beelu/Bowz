@@ -1,3 +1,4 @@
+const { throws } = require('assert');
 const { countReset } = require('console');
 const { Socket } = require('dgram');
 const { connect } = require('http2');
@@ -20,7 +21,7 @@ var express = require("express"),
 	server = require("http").Server(app),
 	https = require('https'),
 	//io = require("socket.io")(server),
-	path = require("path");
+	path = require("path"),
 	middleware = require("./middleware"),
 	user = require("./models/user"),
 	transaction = require('./models/transaction'),
@@ -30,10 +31,11 @@ var express = require("express"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
 	cors = require("cors"),
-	randomNormal = require('random-normal');
+	randomNormal = require('random-normal'),
 	jwt = require("jsonwebtoken"),
-	socketioJwt = require("socketio-jwt");
-	lodash = require("lodash")
+	socketioJwt = require("socketio-jwt"),
+	lodash = require("lodash"),
+	util = require('util');
 
 
 //房間所需要之暫存變數
@@ -507,6 +509,40 @@ app.post("/totalChartData", (req,res) => {
 	res.json({data:data});
 })
 
+app.post("/downloadCSV", (req,res) => {
+	let csv_data = null;
+	let msg;
+
+	try{
+		let RoomNum = req.body.roomNum;
+		let thisRoom = allRooms.get(RoomNum);
+
+		if(thisRoom){
+			let allUsers = thisRoom.Users;
+
+			if(allUsers){
+				csv_data = "玩家編號,分數 \r\n";
+
+				function logAllUsersElements(value, key, map) {
+					csv_data= csv_data+key+","+value.score+"\r\n";
+				}				
+				allUsers.forEach(logAllUsersElements)
+			}else{//房間沒有玩家存在
+				msg = "房間沒有玩家存在";
+			}
+
+		}else{//房間不存在
+			msg = "房間不存在";
+		}
+
+		res.json({data:csv_data, msg:msg});
+	}catch(e){
+		msg = "未知的錯誤";
+		res.json({data:csv_data, msg:msg});
+	}
+
+})
+
 app.post("/changeSingleMoney", (req,res) => {
 	let thisRoom = allRooms.get(req.body.roomNum);
 	let index = req.body.index
@@ -722,7 +758,8 @@ io.on('connection', (socket) => {
 
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
-					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken});//回應enterRoom
+
+					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
@@ -1040,7 +1077,9 @@ io.on('connection', (socket) => {
 			//交易成功寫入交易紀錄表
 			if(chek_point==1){
 				receiver.money += Number(money);
+				receiver.score += (Number(money) - Number(receiver.price));
 				payer.money -= Number(money);
+				payer.score += (Number(receiver.price) - Number(money));
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
@@ -1102,7 +1141,9 @@ io.on('connection', (socket) => {
 						//交易成功寫入交易紀錄表
 						if(chek_point==1){
 							receiver.money += Number(money);
+							receiver.score += (Number(money) - Number(receiver.price));
 							payer.money -= Number(money);
+							payer.score += (Number(receiver.price) - Number(money));
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}
@@ -1308,8 +1349,13 @@ io.on('connection', (socket) => {
 		catch(e){
 			socket.emit('getmultiRecordsResponse', 'error');
 		}
-		
-		
+			
+	});
+
+	socket.on('set_fake_Error',function(data){
+		if(Number(data)==1){
+			throw new Error(`出錯了`);
+		}
 	});
 	
 	
@@ -1321,6 +1367,30 @@ io.on('connection', (socket) => {
 // });
 httpsServer.listen(3000, process.env.IP, function () {
 	console.log("Server Start!");
+});
+
+
+// uncaughtException 最後一道防線。 
+process.on('uncaughtException', function (err) {
+
+	try{
+		var now = new Date(); 
+		var datetime = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate(); 
+	      datetime += ' '+now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
+
+		var error_message = util.format(datetime+'->'+err) + '\n'
+		var log_file = fs.createWriteStream('debug.log', {flags : 'w'});
+		var log_stdout = process.stdout;
+
+		
+			log_file.write(util.format(error_message) + '\n');
+			log_stdout.write(util.format(error_message) + '\n');
+		
+
+	}catch(e){
+		console.log(e);
+	}
+	
 });
 
 /*
