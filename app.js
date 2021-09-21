@@ -614,7 +614,7 @@ app.post("/changeRoleMoney", (req,res) => {
 
 //===========遊戲後儲存歷史資料===============
 app.post('/closeRoom', (req, res) => {
-	room.findOne({nowRoomID: req.body.roomID}, (err, findroom) => {
+	room.findOne({nowRoomID: req.body.roomNum}, (err, findroom) => {
 		if(err){
 			res.json({message:"something got wrong."})
 		}else{
