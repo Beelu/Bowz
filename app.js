@@ -525,6 +525,13 @@ app.post("/downloadCSV", (req,res) => {
 
 				function logAllUsersElements(value, key, map) {
 					csv_data= csv_data+key+","+value.score+"\r\n";
+					function logAllUsersElements(value, key, map) {
+						let score = parseFloat(value.score).toString();
+						if(score == “NaN” || score == "undefined"){
+							score = "No score";
+						}
+						csv_data= csv_data+key+","+score+"\r\n";
+					}
 				}				
 				allUsers.forEach(logAllUsersElements)
 			}else{//房間沒有玩家存在
