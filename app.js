@@ -894,11 +894,12 @@ io.on('connection', (socket) => {
 			}else{
 				
 				allRooms.get(req.roomNum).isGaming = false;
-				
+				/*
 				//把User裡屬於該role的金額依序調整
 				allRooms.get(req.roomNum).Users.forEach(function(value, key) {
 					value.is_admin_transc = 0;
 				});
+				*/
 				
 				io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
 			}
