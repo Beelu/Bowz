@@ -769,7 +769,7 @@ io.on('connection', (socket) => {
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
 					}
-					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null})		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
@@ -892,7 +892,14 @@ io.on('connection', (socket) => {
 				allRooms.get(req.roomNum).isGaming = false;
 				io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
 			}else{
+				
 				allRooms.get(req.roomNum).isGaming = false;
+				
+				//把User裡屬於該role的金額依序調整
+				allRooms.get(req.roomNum).Users.forEach(function(value, key) {
+					value.is_admin_transc = 0;
+				})
+				
 				io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
 			}
 		}       
@@ -1211,10 +1218,18 @@ io.on('connection', (socket) => {
 		*/
                 try {
                         if((used_times<limit_times) || (limit_times==-1)){
-                                receiver.money += Number(money);
-                                //thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-                                used_times+=1;
+				if(receiver.is_admin_transc==0){
+					receiver.money += Number(money);
+					//thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+					io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+					receiver.is_admin_transc=1;
+					used_times+=1;
+				}else{
+					chek_point = -2;
+	                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+				}
+                               
+
                         }
                         else{
                                 chek_point = -1;
