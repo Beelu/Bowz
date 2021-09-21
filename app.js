@@ -1077,7 +1077,9 @@ io.on('connection', (socket) => {
 			//交易成功寫入交易紀錄表
 			if(chek_point==1){
 				receiver.money += Number(money);
+				receiver.score += (Number(money) - Number(receiver.price));
 				payer.money -= Number(money);
+				payer.score += (Number(receiver.price) - Number(money));
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
@@ -1139,7 +1141,9 @@ io.on('connection', (socket) => {
 						//交易成功寫入交易紀錄表
 						if(chek_point==1){
 							receiver.money += Number(money);
+							receiver.score += (Number(money) - Number(receiver.price));
 							payer.money -= Number(money);
+							payer.score += (Number(receiver.price) - Number(money));
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}
