@@ -1142,18 +1142,19 @@ io.on('connection', (socket) => {
 						var payer_Socket = payer.socketID;
 						var money = data.transc_money;//交易金額
 						var chek_point = data.chek_point;
+						var thisRound = data.round;
 							
 						//交易成功寫入交易紀錄表
 						if(chek_point==1){
 							receiver.money += Number(money);
 							payer.money -= Number(money);
-							/*
+							
 							let rec_score = (Number(money) - Number(receiver.price));
 							let pay_score = (Number(receiver.price) - Number(money));
 							
 							receiver.score += rec_score;							
 							payer.score += pay_score;
-							*/
+							
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}
