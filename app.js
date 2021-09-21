@@ -769,7 +769,7 @@ io.on('connection', (socket) => {
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
 					}
-					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
