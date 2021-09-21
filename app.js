@@ -894,7 +894,7 @@ io.on('connection', (socket) => {
 			}else{
 				
 				allRooms.get(req.roomNum).isGaming = false;
-				
+				allRooms.get(req.roomNum).admin_transc_times = 0;
 				//把User裡屬於該role的金額依序調整
 				allRooms.get(req.roomNum).Users.forEach(function(value, key) {
 					value.is_admin_transc = 0;
