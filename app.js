@@ -527,7 +527,7 @@ app.post("/downloadCSV", (req,res) => {
 					csv_data= csv_data+key+","+value.score+"\r\n";
 					function logAllUsersElements(value, key, map) {
 						let score = parseFloat(value.score).toString();
-						if(score == “NaN” || score == "undefined"){
+						if(score == "NaN" || score == "undefined"){
 							score = "No score";
 						}
 						csv_data= csv_data+key+","+score+"\r\n";
@@ -625,6 +625,7 @@ app.post('/closeRoom', (req, res) => {
 		if(err){
 			res.json({message:"something got wrong."})
 		}else{
+			if(!findroom)
 			findroom.active = false;
 			findroom.nowRoomID = null;
 			findroom.save();
