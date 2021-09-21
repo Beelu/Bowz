@@ -759,7 +759,7 @@ io.on('connection', (socket) => {
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
 
-					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken});//回應enterRoom
+					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
