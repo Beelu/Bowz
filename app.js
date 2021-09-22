@@ -769,7 +769,7 @@ io.on('connection', (socket) => {
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
 					}
-					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0, socketID:null})		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0})		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
@@ -892,7 +892,15 @@ io.on('connection', (socket) => {
 				allRooms.get(req.roomNum).isGaming = false;
 				io.sockets.in(req.roomNum).emit('endRoundResponse','error(no next round)');
 			}else{
+				
 				allRooms.get(req.roomNum).isGaming = false;
+				allRooms.get(req.roomNum).admin_transc_times = 0;
+				//把User裡屬於該role的金額依序調整
+				allRooms.get(req.roomNum).Users.forEach(function(value, key) {
+					value.is_admin_transc = 0;
+				});
+				
+				
 				io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
 			}
 		}       
@@ -1070,7 +1078,7 @@ io.on('connection', (socket) => {
 		var allUsers = thisRoom.Users;//獲取所有Users
 
 		var thisRound = data.round;//獲取本回合
-		var money = data.money;//交易金額
+		var money = Number(data.money);//交易金額
 
 		var payer = allUsers.get(data.payer_id);//獲取付款者ID	
 		var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
@@ -1084,7 +1092,7 @@ io.on('connection', (socket) => {
 				receiver.money += Number(money);
 				receiver.score += (Number(money) - Number(receiver.price));
 				payer.money -= Number(money);
-				payer.score += (Number(receiver.price) - Number(money));
+				payer.score += (Number(payer.price) - Number(money));
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
@@ -1133,22 +1141,28 @@ io.on('connection', (socket) => {
 			if(thisRoom){
 				var allUsers = thisRoom.Users;//獲取所有Users
 
-				if(all_Users){
+				if(allUsers){
 					var payer = allUsers.get(data.payer_id);//獲取付款者ID	
 					var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
 
 					if(payer && receiver){
 						//var receiverSocket = receiver.socketID;
-						var payer_Socket = payer_socketID;
-						var money = data.transc_money;//交易金額
+						var payer_Socket = payer.socketID;
+						var money = data.money;//交易金額
 						var chek_point = data.chek_point;
+						var thisRound = data.round;
 							
 						//交易成功寫入交易紀錄表
 						if(chek_point==1){
 							receiver.money += Number(money);
-							receiver.score += (Number(money) - Number(receiver.price));
 							payer.money -= Number(money);
-							payer.score += (Number(receiver.price) - Number(money));
+							
+							let rec_score = (Number(money) - Number(receiver.price));
+							let pay_score = (Number(payer.price) - Number(money));
+							
+							receiver.score += rec_score;							
+							payer.score += pay_score;
+							
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}
@@ -1157,13 +1171,13 @@ io.on('connection', (socket) => {
 						//io.sockets.to(receiverSocket).emit('receiver_transcResp', chek_point);
 							
 					}else{
-						io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+						io.sockets.to(socket.id).emit('transc_error_handle', '不存在的交易對象');
 					}
 				}else{
-					io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+					io.sockets.to(socket.id).emit('transc_error_handle', '沒有人在房間');
 				}
 			}else{
-				io.sockets.to(socket.id).emit('transc_error_handle', 'transc error');
+				io.sockets.to(socket.id).emit('transc_error_handle', '房間不存在');
 			}
 		}
 		catch(e){
@@ -1205,10 +1219,18 @@ io.on('connection', (socket) => {
 		*/
                 try {
                         if((used_times<limit_times) || (limit_times==-1)){
-                                receiver.money += Number(money);
-                                //thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-                                used_times+=1;
+				if(receiver.is_admin_transc==0){
+					receiver.money += Number(money);
+					//thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+					io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+					receiver.is_admin_transc=1;
+					used_times+=1;
+				}else{
+					chek_point = -2;
+	                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+				}
+                               
+
                         }
                         else{
                                 chek_point = -1;
