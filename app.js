@@ -116,7 +116,7 @@ const client = new MongoClient(url);
 
 //passport
 app.use(require("express-session")({
-	secret: "ZaWarudo",
+	secret: process.env.secret,
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
@@ -156,7 +156,7 @@ app.post("/login", function (req, res, next) {
 		req.logIn(user, { session: false }, function (err) {
 			if (err) { return next(err); }
 			var expiretime = Date.now() + 60 * 60 * 1000;
-			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '3h' })
+			const token = jwt.sign({ _id: user._id, email:user.email }, process.env.secret, { issuer:'Dio', expiresIn: '3h' })
 			res.json({ message: 'login success!', user: user, jwt: token, expiresIn: expiretime});
 		});
 	})(req, res, next);
@@ -187,7 +187,7 @@ app.post("/register", function (req, res) {
 			if (err) { return next(err); }
 			reg_email(req.body.email);
 			var expiretime = Date.now() + 60 * 60 * 1000;
-			const token = jwt.sign({ _id: user._id, email:user.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+			const token = jwt.sign({ _id: user._id, email:user.email }, process.env.secret, { issuer:'Dio', expiresIn: '3h' })
 			res.json({ message: "Successfully register.", user: user, jwt: token, expiresIn: expiretime});
 		});
 	});
@@ -713,9 +713,9 @@ app.post('/getRoomList', (req, res)=>{
 //連線驗證登入並重設jwt
 // io.use(function(socket, next){
 // 	if (socket.handshake.query && socket.handshake.query.token){
-// 		jwt.verify(socket.handshake.query.token, 'ZaWarudo', function(err, decoded) {
+// 		jwt.verify(socket.handshake.query.token, process.env.secret, function(err, decoded) {
 // 			if (err) return next(new Error('Authentication error'));
-// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, process.env.secret, { issuer:'Dio', expiresIn: '2h' })
 // 			socket.handshake.query.token = token;
 // 			next();
 // 		});
@@ -729,9 +729,9 @@ app.post('/getRoomList', (req, res)=>{
 // 	console.log(socket.handshake);
 // 	var tk = socket.handshake.headers.authorization.replace('Bearer ', '');
 // 	if (tk){
-// 		jwt.verify(tk, 'ZaWarudo', function(err, decoded) {
+// 		jwt.verify(tk, process.env.secret, function(err, decoded) {
 // 			if (err) return next(new Error('Authentication error'));
-// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, 'ZaWarudo', { issuer:'Dio', expiresIn: '2h' })
+// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, process.env.secret, { issuer:'Dio', expiresIn: '2h' })
 // 			socket.handshake.query.token = token;
 // 			console.log(token)
 // 			next();
@@ -743,7 +743,7 @@ app.post('/getRoomList', (req, res)=>{
 // });
 
 io.use(socketioJwt.authorize({
-	secret: "ZaWarudo",
+	secret: process.env.secret,
 	handshake: true,
 	auth_header_required: true
 }));
