@@ -85,20 +85,20 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors({credentials: true}));
 
 //https
-// var options = {
-// 	key: fs.readFileSync('./server-key.pem'),
-// 	ca: [fs.readFileSync('./cert.pem')],
-// 	cert: fs.readFileSync('./server-cert.pem')
-// };
+var options = {
+	key: fs.readFileSync('./server-key.pem'),
+	ca: [fs.readFileSync('./cert.pem')],
+	cert: fs.readFileSync('./server-cert.pem')
+};
 
 // Certificate
-const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
-const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
-const options = {
-	key: privateKey,
-	cert: certificate,
-	ca: certificate
-};
+// const privateKey = fs.readFileSync('./privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('./fullchain.pem', 'utf8');
+// const options = {
+// 	key: privateKey,
+// 	cert: certificate,
+// 	ca: certificate
+// };
 var httpsServer = https.createServer(options, app)
 var io = require("socket.io")(httpsServer, {
 	cors: {
@@ -618,15 +618,12 @@ app.post("/changeRoleMoney", (req,res) => {
 
 //===========遊戲後儲存歷史資料===============
 app.post('/closeRoom', (req, res) => {
-	room.findOne({nowRoomID: req.body.roomNum}, (err, findroom) => {
+	room.findOneAndUpdate({nowRoomID: req.body.roomNum}, {active: false, nowRoomID: null}, (err, updatedroom) => {
 		if(err){
-			res.json({message:"something got wrong."})
+			res.json({message:"something got wrong."});
 		}else{
-			if(!findroom)
-			findroom.active = false;
-			findroom.nowRoomID = null;
-			findroom.save();
-			res.json({message:"room closed."})
+			if(!updatedroom){res.json({message:"can't find room."})}
+			res.json({message:"room closed."});
 		}
 	});
 });
