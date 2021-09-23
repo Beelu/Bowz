@@ -331,7 +331,7 @@ app.post("/reset/:token", (req, res) => {
 
 //==================================一般功能(尚未連線)================================//
 //進入房間名單
-app.post("/enterRoom", (req, res) => {
+app.post("/enterRoom", middleware.isLogin, (req, res) => {
 	var thisRoom = allRooms.get(req.body.roomNum);
 	if (thisRoom) {
 		thisRoom.Users.set(req.body.ID, { username: req.body.username, money: 100, isManager: false ,price : 0})		//設定進入使用者的資料
@@ -346,7 +346,7 @@ app.post("/enterRoom", (req, res) => {
 });
 
 //創新房間(加進資料庫)
-app.post("/createRoom", (req, res) => {
+app.post("/createRoom", middleware.checkManager, (req, res) => {
 	var createRoom = {
 		email: req.body.email,
 		interval: req.body.interval,
@@ -424,7 +424,7 @@ app.post("/deleteRoom/:id", (req, res) => {
 })
 
 //開新房間
-app.post("/openRoom", (req, res) => {
+app.post("/openRoom", middleware.checkManager, (req, res) => {
 	randomID = Math.floor(Math.random() * 99999).toString();
 	while(allRooms.get(randomID)){
 		randomID = Math.floor(Math.random() * 99999).toString();
