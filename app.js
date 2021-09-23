@@ -925,6 +925,9 @@ io.on('connection', (socket) => {
 			let restrict;//紀錄買家賣家何者較少
 			let tcount = 0; //計已分配的總數量
 			let rantmp = 0; //用來隨機分配的參數
+			let sRandom = Math.floor((saleMax - saleMin)/interval) + 1
+			let bRandom = Math.floor((buyMax - buyMin)/interval) + 1
+			console.log(sRandom)
 
 			if(thisRoom.isGaming == true){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
@@ -949,15 +952,13 @@ io.on('connection', (socket) => {
 						}
 						switch(rantmp){
 							case 0:
-								money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-								money = interval * Math.ceil(money/interval)
+								money = Math.floor(Math.random()*sRandom) * interval + saleMin
 								value.role = 'seller' 
 								value.price = money 
 								rantmp=1
 								break;
 							case 1:
-								money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-								money = interval * Math.ceil(money/interval)
+								money = Math.floor(Math.random()*bRandom) * interval + buyMin
 								value.role = 'buyer' 
 								value.price = money
 								rantmp=0
@@ -967,13 +968,11 @@ io.on('connection', (socket) => {
 						thisRoom.Users.set(key,value)
 					}else{
 						if(sellerNum>buyerNum){
-							money = Math.floor(Math.random() * (saleMax-saleMin) ) + saleMin
-							money = interval * Math.ceil(money/interval)
+							money = Math.floor(Math.random()*sRandom) * interval + saleMin
 							value.role = 'seller' 
 							value.price = money 
 						}else{
-							money = Math.floor(Math.random() * (buyMax-buyMin)) + buyMin
-							money = interval * Math.ceil(money/interval)
+							money = Math.floor(Math.random()*sRandom)* interval + saleMin
 							value.role = 'buyer' 
 							value.price = money
 							rantmp=0
