@@ -1,5 +1,6 @@
 var room = require("../models/room");
-var user = require("../models/user")
+var user = require("../models/user");
+var jwt = require("jsonwebtoken");
 if (process.env.NODE_ENV !== "production") {
 	require('dotenv').config();
 }
