@@ -163,7 +163,7 @@ app.post("/login", function (req, res, next) {
 });
 
 //升為管理者
-app.post("/promotion", function(req, res){
+app.post("/promotion", middleware.checkManager, function(req, res){
 	user.findOneAndUpdate({email: req.body.email}, {isManager: true}, (err, updateuser) => {
 		if(err){return res.json({message: "something got wrong."})}
 		res.json({message: "update completed.", email: updateuser.email})
@@ -410,7 +410,7 @@ app.post("/showRoom/:id", (req, res) => {
 })
 
 //刪除特定房間
-app.post("/deleteRoom/:id", (req, res) => {
+app.post("/deleteRoom/:id", middleware.checkOwnership, (req, res) => {
 	room.findByIdAndRemove(req.params.id, (err, delroom) => {
 		if(err){
 			res.json({message:"something got wrong."})
@@ -617,7 +617,7 @@ app.post("/changeRoleMoney", (req,res) => {
 
 
 //===========遊戲後儲存歷史資料===============
-app.post('/closeRoom', (req, res) => {
+app.post('/closeRoom', middleware.checkManager, (req, res) => {
 	room.findOneAndUpdate({nowRoomID: req.body.roomNum}, {active: false, nowRoomID: null}, (err, updatedroom) => {
 		if(err){
 			res.json({message:"something got wrong."});
