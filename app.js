@@ -760,13 +760,16 @@ io.on('connection', (socket) => {
 
 				var thisUser = thisRoom.Users.get(data.ID)
 				if(thisUser){
-
-					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score});//回應enterRoom
+					let record = null;
+					if(thisUser.myRecord[thisRoom.nowRound]){
+						record = thisUser.myRecord[thisRoom.nowRound];
+					}
+					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score, thisRound_Record: record});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
 					}
-					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0})		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0, myRecord:[]});		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
@@ -1091,6 +1094,8 @@ io.on('connection', (socket) => {
 				payer.money -= Number(money);
 				payer.score += (Number(payer.price) - Number(money));
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+				payer.myRecord.push({userid: data.receiver_id, price: money});
+       				receiver.myRecord.push({userid: data.payer_id, price: money});
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}
 
@@ -1161,6 +1166,8 @@ io.on('connection', (socket) => {
 							payer.score += pay_score;
 							
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+							payer.myRecord.push({userid: data.receiver_id, price: money});
+       							receiver.myRecord.push({userid: data.payer_id, price: money});
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}
 
