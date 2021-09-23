@@ -927,7 +927,6 @@ io.on('connection', (socket) => {
 			let rantmp = 0; //用來隨機分配的參數
 			let sRandom = Math.floor((saleMax - saleMin)/interval) + 1
 			let bRandom = Math.floor((buyMax - buyMin)/interval) + 1
-			console.log(sRandom)
 
 			if(thisRoom.isGaming == true){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
