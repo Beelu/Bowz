@@ -749,6 +749,12 @@ io.use(socketioJwt.authorize({
 io.on('connection', (socket) => {
 	//進入房間
 	socket.on('enterRoom', (data) => {
+		// console.log(io.of("/").adapter.rooms)
+		// io.of("/").adapter.rooms.forEach(function(s){
+		// 	s.disconnect;
+		// });
+		// console.log(io.of("/").adapter.rooms)
+
 		var newToken = 'null';
 		if(socket.decoded_token){
 			newToken = jwt.sign({ _id: socket.decoded_token._id, email: socket.decoded_token.email }, process.env.secret, { issuer:'Dio', expiresIn: '3h' })
@@ -785,7 +791,7 @@ io.on('connection', (socket) => {
 	//離開
 	socket.on('leaveRoom', (data) => {
 		try{
-			socket.leave(data.roomNum)
+			socket.disconnect();
 		}		
 		catch(e){
 		}	
