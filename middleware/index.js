@@ -1,12 +1,15 @@
 var room = require("../models/room");
 var user = require("../models/user")
+if (process.env.NODE_ENV !== "production") {
+	require('dotenv').config();
+}
 
 var middleware = {};
 
 middleware.isLogin = function(req, res, next){
 	if(req.header('Authorization')){
 		const token = req.header('Authorization').replace('Bearer ', '')
-		jwt.verify(token, "ZaWarudo", (err, decode)=>{
+		jwt.verify(token, process.env.secret, (err, decode)=>{
 			if(err){
 				console.log(err)
 				res.status(403).json({ message: '驗證失敗，請重新登入'});
@@ -23,7 +26,7 @@ middleware.isLogin = function(req, res, next){
 middleware.checkOwnership = function(req, res, next){
 	if(req.header('Authorization')){
 		const token = req.header('Authorization').replace('Bearer ', '')
-		jwt.verify(token, "ZaWarudo", (err, decode)=>{
+		jwt.verify(token, process.env.secret, (err, decode)=>{
 			if(err){
 				res.status(403).json({ message: "驗證失敗"});
 			}
@@ -49,7 +52,7 @@ middleware.checkOwnership = function(req, res, next){
 middleware.checkManager = function(req, res, next){
 	if(req.header('Authorization')){
 		const token = req.header('Authorization').replace('Bearer ', '')
-		jwt.verify(token, "ZaWarudo", (err, decode)=>{
+		jwt.verify(token, process.env.secret, (err, decode)=>{
 			if(err){
 				console.log(err)
 				res.status(403).json({ message: '驗證失敗，請重新登入'});
