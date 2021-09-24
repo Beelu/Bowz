@@ -942,7 +942,36 @@ io.on('connection', (socket) => {
 		}
 		
 	});
+	socket.on('sameSetShuffle',function(req){
+		try{
+			let thisRoom = allRooms.get(req.roomNum);
+			let userArr = Array.from(thisRoom.Users)
+			let newUserArr = []
+			let chartData = tmpChartData.get(req.roomNum)
 
+			chartData.buyer.forEach( value =>{
+				let ranNum = Math.floor(Math.random() * userArr.length)
+				userArr[ranNum][1].price = value
+				userArr[ranNum][1].role = 'buyer'
+				newUserArr.push(userArr[ranNum])
+				userArr.splice(ranNum,1)
+			})
+			
+			chartData.seller.forEach( value =>{
+				let ranNum = Math.floor(Math.random() * userArr.length)
+				userArr[ranNum][1].price = value
+				userArr[ranNum][1].role = 'seller'
+				newUserArr.push(userArr[ranNum])
+				userArr.splice(ranNum,1)
+			})
+			thisRoom.Users = new Map(newUserArr)
+			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse',{userData:Array.from(thisRoom.Users)});
+		}
+		catch(e){
+			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse','error');
+		}
+	});
+	
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
