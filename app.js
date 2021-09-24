@@ -526,7 +526,7 @@ app.post("/downloadCSV", (req,res) => {
 				//個人交易紀錄
 				//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
 				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
-				for(int i=0; i<thisRoom.round.length; i++){
+				for(var i=0; i<thisRoom.round.length; i++){
 					function logAllUsersElements_Round(value, key, map) {
 						let role = value.myRecord.[i].role;
 						let price = value.myRecord.[i].price;
