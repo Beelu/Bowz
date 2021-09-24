@@ -1171,7 +1171,7 @@ io.on('connection', (socket) => {
 			}		
 		}       
 		catch(e){
-			io.sockets.to(socket.id).emit('transc_error_handle','checkQRcode error')
+			io.sockets.to(socket.id).emit('transc_error_handle',data)
 		}
 	});
 
@@ -1241,7 +1241,7 @@ io.on('connection', (socket) => {
 				}
 			}
 			catch(er){
-				console(er);
+				console.log(er);
 			}
 		}
 	});
