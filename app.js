@@ -942,6 +942,50 @@ io.on('connection', (socket) => {
 		}
 		
 	});
+
+	
+	socket.on('shuffle',(req)=>{
+		try{
+			let thisRoom = allRooms.get(req.roomNum);
+
+			if(thisRoom.isGaming == true){
+				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
+			}else{
+				thisRoom.Users.delete(req.teacherID)
+
+				let userArr = Array.from(thisRoom.Users)
+				let newUserArr = []
+				let roundNum = req.roundNum;
+				let sRandom = Math.floor((thisRoom.round[roundNum].saleMax - thisRoom.round[roundNum].saleMin)/thisRoom.interval) + 1
+				let bRandom = Math.floor((thisRoom.round[roundNum].buyMax - thisRoom.round[roundNum].buyMin)/thisRoom.interval) + 1	
+				let sellerNum = Math.round((thisRoom.round[roundNum].ratio/100) * thisRoom.Users.size)
+
+				for(i=0;i<sellerNum;i++){
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price =  Math.floor(Math.random()*sRandom) * thisRoom.interval + thisRoom.round[roundNum].saleMin
+					userArr[ranNum][1].role = 'seller'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
+				}
+				for(i=0;i<(thisRoom.Users.size-sellerNum);i++){
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price =  Math.floor(Math.random()*bRandom) * thisRoom.interval + thisRoom.round[roundNum].buyMin
+					userArr[ranNum][1].role = 'buyer'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
+				}
+
+				thisRoom.Users = new Map(newUserArr)
+				thisRoom.total = thisRoom.total - 1
+				allRooms.set(req.roomNum, thisRoom);
+				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
+			}
+		}catch(e){
+			console.log(e)
+			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
+		}
+	});
+
 	socket.on('sameSetShuffle',function(req){
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
@@ -972,86 +1016,6 @@ io.on('connection', (socket) => {
 		}
 	});
 	
-	socket.on('shuffle',(req)=>{
-		try{
-			let thisRoom = allRooms.get(req.roomNum);
-			thisRoom.Users.delete(req.teacherID)
-			let roundNum = req.roundNum;
-			let saleMax = thisRoom.round[roundNum].saleMax;
-			let buyMax = thisRoom.round[roundNum].buyMax;
-			let saleMin = thisRoom.round[roundNum].saleMin;
-			let buyMin = thisRoom.round[roundNum].buyMin;
-			let ratio =  thisRoom.round[roundNum].ratio/100;
-			let total = thisRoom.Users.size; 
-			let interval = thisRoom.interval;
-			let restrict;//紀錄買家賣家何者較少
-			let tcount = 0; //計已分配的總數量
-			let rantmp = 0; //用來隨機分配的參數
-			let sRandom = Math.floor((saleMax - saleMin)/interval) + 1
-			let bRandom = Math.floor((buyMax - buyMin)/interval) + 1
-
-			if(thisRoom.isGaming == true){
-				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
-			}else{
-
-				let sellerNum = Math.round(ratio * total)
-				let buyerNum = total-sellerNum
-
-				if(sellerNum>=buyerNum){
-					restrict = buyerNum;
-				}else{
-					restrict = sellerNum;
-				}
-				// 分配身份的步驟：假設有12人 buyer:5 seller:7 
-				// 1.先分配10個人分別五五買賣 2.再分配兩個seller
-				thisRoom.Users.forEach(function(value,key) {
-					
-					//上述的步驟一在if內完成，步驟二在else內完成
-					if(tcount<restrict*2){
-						if(tcount%2==0){
-							rantmp = Math.floor(Math.random() * 2)
-						}
-						switch(rantmp){
-							case 0:
-								money = Math.floor(Math.random()*sRandom) * interval + saleMin
-								value.role = 'seller' 
-								value.price = money 
-								rantmp=1
-								break;
-							case 1:
-								money = Math.floor(Math.random()*bRandom) * interval + buyMin
-								value.role = 'buyer' 
-								value.price = money
-								rantmp=0
-								break;
-						}
-						tcount++;
-						thisRoom.Users.set(key,value)
-					}else{
-						if(sellerNum>buyerNum){
-							money = Math.floor(Math.random()*sRandom) * interval + saleMin
-							value.role = 'seller' 
-							value.price = money 
-						}else{
-							money = Math.floor(Math.random()*sRandom)* interval + saleMin
-							value.role = 'buyer' 
-							value.price = money
-							rantmp=0
-						}
-						
-						tcount++;
-						thisRoom.Users.set(key,value)
-					}
-				});
-				thisRoom.total = thisRoom.total - 1
-				allRooms.set(req.roomNum, thisRoom);
-				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
-			}
-		}catch(e){
-			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
-		}
-	});
-
 	//===============高鵬雲部分====================//
 
 	/*掃到 QR code
