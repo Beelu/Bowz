@@ -521,7 +521,29 @@ app.post("/downloadCSV", (req,res) => {
 			let allUsers = thisRoom.Users;
 
 			if(allUsers){
-				csv_data = "玩家編號,分數 \r\n";
+				csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
+				
+				//個人交易紀錄
+				//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
+				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
+				for(int i=0; i<thisRoom.round.length; i++){
+					function logAllUsersElements_Round(value, key, map) {
+						let role = value.myRecord.[i].role;
+						let price = value.myRecord.[i].price;
+						let score = value.myRecord.[i].score;
+						let status = value.myRecord.[i].status;
+						let round_num = i+1;
+						if(status==0) {
+							var s = N;
+						}else{
+							s = Y;
+						}
+						csv_data= csv_data+round_num+","+key+","+role+","+price+","+s+","+score+"\r\n";
+					}
+					allUsers.forEach(logAllUsersElements_Round)
+				}
+
+				csv_data = "玩家編號,總得分 \r\n";
 				function logAllUsersElements(value, key, map) {
 					let score = parseFloat(value.score).toString();
 					if(score == NaN || score == "undefined"){
@@ -1099,13 +1121,23 @@ io.on('connection', (socket) => {
 			//交易成功寫入交易紀錄表
 			if(chek_point==1){
 				receiver.money += Number(money);
-				receiver.score += (Number(money) - Number(receiver.price));
+				
+				let receiver_score = (Number(money) - Number(receiver.price));
+				receiver.score += pay_socre;
 				payer.money -= Number(money);
-				payer.score += (Number(payer.price) - Number(money));
+				
+				let payer_socre = (Number(payer.price) - Number(money));
+				payer.score += payer_socre;
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-				payer.myRecord.push({userid: data.receiver_id, price: money});
-       				receiver.myRecord.push({userid: data.payer_id, price: money});
+				
+				//個人交易紀錄
+				payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:payer_socre, status:1});
+       				receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:receiver_score, status:1});
+				
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+			}else{
+				payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:0, status:0});
+       				receiver.myRecord.push({userid: data.payer_id, role:"receiver",pprice: money, score:0, status:0});
 			}
 
 			io.sockets.to(receiverSocket).emit('transcResp', chek_point);
@@ -1175,9 +1207,16 @@ io.on('connection', (socket) => {
 							payer.score += pay_score;
 							
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-							payer.myRecord.push({userid: data.receiver_id, price: money});
-       							receiver.myRecord.push({userid: data.payer_id, price: money});
+							
+							//個人交易紀錄
+							payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
+							receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
+							
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+						}else{
+							//個人交易紀錄
+							payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:0, status:0});
+							receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:0, status:0});
 						}
 
 						io.sockets.to(payer_Socket).emit('payer_transcResp', chek_point);
