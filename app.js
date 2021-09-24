@@ -534,9 +534,9 @@ app.post("/downloadCSV", (req,res) => {
 						let status = value.myRecord.[i].status;
 						let round_num = i+1;
 						if(status==0) {
-							var s = N;
+							var s = "N";
 						}else{
-							s = Y;
+							s = "Y";
 						}
 						csv_data= csv_data+round_num+","+key+","+role+","+price+","+s+","+score+"\r\n";
 					}
