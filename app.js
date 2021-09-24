@@ -528,10 +528,10 @@ app.post("/downloadCSV", (req,res) => {
 				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
 				for(var i=0; i<thisRoom.round.length; i++){
 					function logAllUsersElements_Round(value, key, map) {
-						let role = value.myRecord.[i].role;
-						let price = value.myRecord.[i].price;
-						let score = value.myRecord.[i].score;
-						let status = value.myRecord.[i].status;
+						let role = value.myRecord[i].role;
+						let price = value.myRecord[i].price;
+						let score = value.myRecord[i].score;
+						let status = value.myRecord[i].status;
 						let round_num = i+1;
 						if(status==0) {
 							var s = "N";
