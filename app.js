@@ -1097,7 +1097,7 @@ io.on('connection', (socket) => {
 			
 		}       
 		catch(e){
-			io.sockets.to(payerSocket).emit('transCheckReq','checkQRcode error')
+			io.sockets.to(payerSocket).emit('transCheckReq',data)
 		}
 	
 
