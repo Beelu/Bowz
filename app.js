@@ -1053,7 +1053,7 @@ io.on('connection', (socket) => {
 	socket.on('setSocket', (data)=>{
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
-		var thisuser = allUsers.get(String(data.user_id));
+		var thisuser = allUsers.get(data.user_id);
 
 		thisuser.socketID = socket.id;
 		var s_id = thisuser.socketID;
@@ -1081,7 +1081,7 @@ io.on('connection', (socket) => {
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
 			
-		var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+		var payer = allUsers.get(data.payer_id)//獲取付款者ID
 		var payerSocket = payer.socketID;
 		var receiver_id = data.receiver_id;
 		  
@@ -1089,7 +1089,7 @@ io.on('connection', (socket) => {
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
 			
-			var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+			var payer = allUsers.get(data.payer_id)//獲取付款者ID
 			var payerSocket = payer.socketID;
 			var receiver_id = data.receiver_id;
 			
@@ -1161,7 +1161,7 @@ io.on('connection', (socket) => {
 				var allUsers = thisRoom.Users;//獲取所有Users
 
 				if(allUsers){
-					var receiver = allUsers.get(String(data.receiver_id))//獲取付款者ID
+					var receiver = allUsers.get(data.receiver_id)//獲取付款者ID
 					var receiverSocket = receiver.socketID;
 
 					var money = data.transc_money;
