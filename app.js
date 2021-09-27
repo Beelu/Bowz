@@ -949,6 +949,12 @@ io.on('connection', (socket) => {
 			let thisRoom = allRooms.get(req.roomNum);
 			thisRoom.Users.delete(req.teacherID)
 
+			thisRoom.Users.forEach((value,key)=>{
+				if(value.isManager){
+					thisRoom.Users.delete(key)
+				}
+			})
+			
 			if(thisRoom.isGaming == true){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 			}else{
