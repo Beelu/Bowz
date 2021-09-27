@@ -947,11 +947,11 @@ io.on('connection', (socket) => {
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
+			thisRoom.Users.delete(req.teacherID)
 
 			if(thisRoom.isGaming == true){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 			}else{
-				thisRoom.Users.delete(req.teacherID)
 
 				let userArr = Array.from(thisRoom.Users)
 				let newUserArr = []
@@ -978,7 +978,7 @@ io.on('connection', (socket) => {
 				thisRoom.Users = new Map(newUserArr)
 				thisRoom.total = thisRoom.total - 1
 				allRooms.set(req.roomNum, thisRoom);
-				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
+				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users),number:thisRoom.Users.size,userArr:newUserArr});
 			}
 		}catch(e){
 			console.log(e)
