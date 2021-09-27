@@ -976,9 +976,9 @@ io.on('connection', (socket) => {
 				}
 
 				thisRoom.Users = new Map(newUserArr)
-				thisRoom.total = thisRoom.total - 1
+				thisRoom.total = thisRoom.Users.size
 				allRooms.set(req.roomNum, thisRoom);
-				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users),number:thisRoom.Users.size,userArr:newUserArr});
+				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
 		}catch(e){
 			console.log(e)
