@@ -45,7 +45,7 @@ var testusers = new Map();
 var tmpChartData = new Map();
 var totalChartData = new Map();
 
-testusers.set('123', {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50, socketID:null});
+testusers.set("123", {username: '123', money: 500, role:"buyer",  price:60,  item:null, score:50, socketID:null});
 testusers.set('234', {username: '234', money: 570, role:"buyer",  price:70,  item:null, score:60, socketID:null});
 testusers.set('345', {username: '345', money: 400, role:"buyer",  price:120, item:null, score:20, socketID:null}); 
 testusers.set('456', {username: '456', money: 450, role:"seller", price:100, item:null, score:30, socketID:null});
@@ -654,7 +654,7 @@ app.post('/saveRecord', (req, res)=>{
 					});
 				}
 			}
-			await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+			await new Promise(resolve => setTimeout(resolve, saveRoom.round.length * 70));
 		}
 		await recording();
 		//存進所有歷史紀錄
@@ -742,7 +742,7 @@ app.post('/getRoomList', (req, res)=>{
 io.use(socketioJwt.authorize({
 	secret: process.env.secret,
 	handshake: true,
-	auth_header_required: true
+	// auth_header_required: true
 }));
 
 //連線成功
