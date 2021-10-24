@@ -543,7 +543,7 @@ app.post("/downloadCSV", (req,res) => {
 					allUsers.forEach(logAllUsersElements_Round)
 				}
 
-				csv_data = "玩家編號,總得分 \r\n";
+				csv_data = csv_data+"玩家編號,總得分 \r\n";
 				function logAllUsersElements(value, key, map) {
 					let score = parseFloat(value.score).toString();
 					if(score == null || score == "undefined"){
