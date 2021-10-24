@@ -521,10 +521,32 @@ app.post("/downloadCSV", (req,res) => {
 			let allUsers = thisRoom.Users;
 
 			if(allUsers){
-				csv_data = "玩家編號,分數 \r\n";
+				csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
+				
+				//個人交易紀錄
+				//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
+				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
+				for(var i=0; i<thisRoom.round.length; i++){
+					function logAllUsersElements_Round(value, key, map) {
+						let role = value.myRecord[i].role;
+						let price = value.myRecord[i].price;
+						let score = value.myRecord[i].score;
+						let status = value.myRecord[i].status;
+						let round_num = i+1;
+						if(status==0) {
+							var s = "N";
+						}else{
+							s = "Y";
+						}
+						csv_data= csv_data+round_num+","+key+","+role+","+price+","+s+","+score+"\r\n";
+					}
+					allUsers.forEach(logAllUsersElements_Round)
+				}
+
+				csv_data = csv_data+"玩家編號,總得分 \r\n";
 				function logAllUsersElements(value, key, map) {
 					let score = parseFloat(value.score).toString();
-					if(score == NaN || score == "undefined"){
+					if(score == null || score == "undefined"){
 						score = "No score";
 					}
 					csv_data= csv_data+key+","+score+"\r\n";
@@ -921,86 +943,86 @@ io.on('connection', (socket) => {
 		
 	});
 
+	
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
 			thisRoom.Users.delete(req.teacherID)
-			let roundNum = req.roundNum;
-			let saleMax = thisRoom.round[roundNum].saleMax;
-			let buyMax = thisRoom.round[roundNum].buyMax;
-			let saleMin = thisRoom.round[roundNum].saleMin;
-			let buyMin = thisRoom.round[roundNum].buyMin;
-			let ratio =  thisRoom.round[roundNum].ratio/100;
-			let total = thisRoom.Users.size; 
-			let interval = thisRoom.interval;
-			let restrict;//紀錄買家賣家何者較少
-			let tcount = 0; //計已分配的總數量
-			let rantmp = 0; //用來隨機分配的參數
-			let sRandom = Math.floor((saleMax - saleMin)/interval) + 1
-			let bRandom = Math.floor((buyMax - buyMin)/interval) + 1
 
+			thisRoom.Users.forEach((value,key)=>{
+				if(value.isManager){
+					thisRoom.Users.delete(key)
+				}
+			})
+			
 			if(thisRoom.isGaming == true){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 			}else{
 
-				let sellerNum = Math.round(ratio * total)
-				let buyerNum = total-sellerNum
+				let userArr = Array.from(thisRoom.Users)
+				let newUserArr = []
+				let roundNum = req.roundNum;
+				let sRandom = Math.floor((thisRoom.round[roundNum].saleMax - thisRoom.round[roundNum].saleMin)/thisRoom.interval) + 1
+				let bRandom = Math.floor((thisRoom.round[roundNum].buyMax - thisRoom.round[roundNum].buyMin)/thisRoom.interval) + 1	
+				let sellerNum = Math.round((thisRoom.round[roundNum].ratio/100) * thisRoom.Users.size)
 
-				if(sellerNum>=buyerNum){
-					restrict = buyerNum;
-				}else{
-					restrict = sellerNum;
+				for(i=0;i<sellerNum;i++){
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price =  Math.floor(Math.random()*sRandom) * thisRoom.interval + thisRoom.round[roundNum].saleMin
+					userArr[ranNum][1].role = 'seller'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
 				}
-				// 分配身份的步驟：假設有12人 buyer:5 seller:7 
-				// 1.先分配10個人分別五五買賣 2.再分配兩個seller
-				thisRoom.Users.forEach(function(value,key) {
-					
-					//上述的步驟一在if內完成，步驟二在else內完成
-					if(tcount<restrict*2){
-						if(tcount%2==0){
-							rantmp = Math.floor(Math.random() * 2)
-						}
-						switch(rantmp){
-							case 0:
-								money = Math.floor(Math.random()*sRandom) * interval + saleMin
-								value.role = 'seller' 
-								value.price = money 
-								rantmp=1
-								break;
-							case 1:
-								money = Math.floor(Math.random()*bRandom) * interval + buyMin
-								value.role = 'buyer' 
-								value.price = money
-								rantmp=0
-								break;
-						}
-						tcount++;
-						thisRoom.Users.set(key,value)
-					}else{
-						if(sellerNum>buyerNum){
-							money = Math.floor(Math.random()*sRandom) * interval + saleMin
-							value.role = 'seller' 
-							value.price = money 
-						}else{
-							money = Math.floor(Math.random()*sRandom)* interval + saleMin
-							value.role = 'buyer' 
-							value.price = money
-							rantmp=0
-						}
-						
-						tcount++;
-						thisRoom.Users.set(key,value)
-					}
-				});
-				thisRoom.total = thisRoom.total - 1
+				for(i=0;i<(thisRoom.Users.size-sellerNum);i++){
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price =  Math.floor(Math.random()*bRandom) * thisRoom.interval + thisRoom.round[roundNum].buyMin
+					userArr[ranNum][1].role = 'buyer'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
+				}
+
+				thisRoom.Users = new Map(newUserArr)
+				thisRoom.total = thisRoom.Users.size
 				allRooms.set(req.roomNum, thisRoom);
 				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
 		}catch(e){
+			console.log(e)
 			io.sockets.in(req.roomNum).emit('shuffleResponse','error');
 		}
 	});
 
+	socket.on('sameSetShuffle',function(req){
+		try{
+			let thisRoom = allRooms.get(req.roomNum);
+			let userArr = Array.from(thisRoom.Users)
+			let newUserArr = []
+			let chartData = tmpChartData.get(req.roomNum)
+
+			chartData.buyer.forEach( value =>{
+				let ranNum = Math.floor(Math.random() * userArr.length)
+				userArr[ranNum][1].price = value
+				userArr[ranNum][1].role = 'buyer'
+				newUserArr.push(userArr[ranNum])
+				userArr.splice(ranNum,1)
+			})
+			
+			chartData.seller.forEach( value =>{
+				let ranNum = Math.floor(Math.random() * userArr.length)
+				userArr[ranNum][1].price = value
+				userArr[ranNum][1].role = 'seller'
+				newUserArr.push(userArr[ranNum])
+				userArr.splice(ranNum,1)
+			})
+			thisRoom.Users = new Map(newUserArr)
+			allRooms.set(req.roomNum, thisRoom);
+			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse',{userData:Array.from(thisRoom.Users)});
+		}
+		catch(e){
+			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse','error');
+		}
+	});
+	
 	//===============高鵬雲部分====================//
 
 	/*掃到 QR code
@@ -1031,7 +1053,7 @@ io.on('connection', (socket) => {
 	socket.on('setSocket', (data)=>{
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
-		var thisuser = allUsers.get(String(data.user_id));
+		var thisuser = allUsers.get(data.user_id);
 
 		thisuser.socketID = socket.id;
 		var s_id = thisuser.socketID;
@@ -1059,7 +1081,7 @@ io.on('connection', (socket) => {
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
 			
-		var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+		var payer = allUsers.get(data.payer_id)//獲取付款者ID
 		var payerSocket = payer.socketID;
 		var receiver_id = data.receiver_id;
 		  
@@ -1067,7 +1089,7 @@ io.on('connection', (socket) => {
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
 			
-			var payer = allUsers.get(String(data.payer_id))//獲取付款者ID
+			var payer = allUsers.get(data.payer_id)//獲取付款者ID
 			var payerSocket = payer.socketID;
 			var receiver_id = data.receiver_id;
 			
@@ -1075,7 +1097,7 @@ io.on('connection', (socket) => {
 			
 		}       
 		catch(e){
-			io.sockets.to(payerSocket).emit('transCheckReq','checkQRcode error')
+			io.sockets.to(payerSocket).emit('transCheckReq',data)
 		}
 	
 
@@ -1099,13 +1121,23 @@ io.on('connection', (socket) => {
 			//交易成功寫入交易紀錄表
 			if(chek_point==1){
 				receiver.money += Number(money);
-				receiver.score += (Number(money) - Number(receiver.price));
+				
+				let receiver_score = (Number(money) - Number(receiver.price));
+				receiver.score += receiver_score;
 				payer.money -= Number(money);
-				payer.score += (Number(payer.price) - Number(money));
+				
+				let payer_socre = (Number(payer.price) - Number(money));
+				payer.score += payer_socre;
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-				payer.myRecord.push({userid: data.receiver_id, price: money});
-       				receiver.myRecord.push({userid: data.payer_id, price: money});
+				
+				//個人交易紀錄
+				payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:payer_socre, status:1});
+       				receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:receiver_score, status:1});
+				
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+			}else{
+				payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:0, status:0});
+       				receiver.myRecord.push({userid: data.payer_id, role:"receiver",pprice: money, score:0, status:0});
 			}
 
 			io.sockets.to(receiverSocket).emit('transcResp', chek_point);
@@ -1129,7 +1161,7 @@ io.on('connection', (socket) => {
 				var allUsers = thisRoom.Users;//獲取所有Users
 
 				if(allUsers){
-					var receiver = allUsers.get(String(data.receiver_id))//獲取付款者ID
+					var receiver = allUsers.get(data.receiver_id)//獲取付款者ID
 					var receiverSocket = receiver.socketID;
 
 					var money = data.transc_money;
@@ -1139,7 +1171,7 @@ io.on('connection', (socket) => {
 			}		
 		}       
 		catch(e){
-			io.sockets.to(socket.id).emit('transc_error_handle','checkQRcode error')
+			io.sockets.to(socket.id).emit('transc_error_handle',data)
 		}
 	});
 
@@ -1175,9 +1207,16 @@ io.on('connection', (socket) => {
 							payer.score += pay_score;
 							
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-							payer.myRecord.push({userid: data.receiver_id, price: money});
-       							receiver.myRecord.push({userid: data.payer_id, price: money});
+							
+							//個人交易紀錄
+							payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
+							receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
+							
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+						}else{
+							//個人交易紀錄
+							payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:0, status:0});
+							receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:0, status:0});
 						}
 
 						io.sockets.to(payer_Socket).emit('payer_transcResp', chek_point);
@@ -1202,7 +1241,7 @@ io.on('connection', (socket) => {
 				}
 			}
 			catch(er){
-				console(er);
+				console.log(er);
 			}
 		}
 	});
