@@ -984,7 +984,7 @@ io.on('connection', (socket) => {
 				thisRoom.Users = new Map(newUserArr)
 				thisRoom.total = thisRoom.Users.size
 				allRooms.set(req.roomNum, thisRoom);
-				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users),number:thisRoom.Users.size,teacher:req.teacherID});
+				io.sockets.in(req.roomNum).emit('shuffleResponse',{ userData: Array.from(thisRoom.Users)});
 			}
 		}catch(e){
 			console.log(e)
@@ -1015,6 +1015,7 @@ io.on('connection', (socket) => {
 				userArr.splice(ranNum,1)
 			})
 			thisRoom.Users = new Map(newUserArr)
+			allRooms.set(req.roomNum, thisRoom);
 			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse',{userData:Array.from(thisRoom.Users)});
 		}
 		catch(e){
