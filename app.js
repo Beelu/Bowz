@@ -1122,7 +1122,7 @@ io.on('connection', (socket) => {
 				receiver.money += Number(money);
 				
 				let receiver_score = (Number(money) - Number(receiver.price));
-				receiver.score += pay_socre;
+				receiver.score += receiver_score;
 				payer.money -= Number(money);
 				
 				let payer_socre = (Number(payer.price) - Number(money));
