@@ -730,19 +730,19 @@ app.post('/getRoomList', (req, res)=>{
 	
 //===================================socket.io=======================================//
 //連線驗證登入並重設jwt
-io.use(function(socket, next){
-	if (socket.handshake.query && socket.handshake.query.token){
-		jwt.verify(socket.handshake.query.token, process.env.secret, function(err, decoded) {
-			if (err) return next(new Error('Authentication error'));
-			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, process.env.secret, { issuer:'Dio', expiresIn: '2h' })
-			socket.handshake.query.token = token;
-			next();
-		});
-	}
-	else {
-		next(new Error('Authentication error'));
-	}    
-});
+// io.use(function(socket, next){
+// 	if (socket.handshake.query && socket.handshake.query.token){
+// 		jwt.verify(socket.handshake.query.token, process.env.secret, function(err, decoded) {
+// 			if (err) return next(new Error('Authentication error'));
+// 			const token = jwt.sign({ _id: decoded._id, email: decoded.email }, process.env.secret, { issuer:'Dio', expiresIn: '2h' })
+// 			socket.handshake.query.token = token;
+// 			next();
+// 		});
+// 	}
+// 	else {
+// 		next(new Error('Authentication error'));
+// 	}    
+// });
 
 // io.use(function(socket, next){
 // 	console.log(socket.handshake);
