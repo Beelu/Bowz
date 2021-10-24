@@ -546,7 +546,7 @@ app.post("/downloadCSV", (req,res) => {
 				csv_data = "玩家編號,總得分 \r\n";
 				function logAllUsersElements(value, key, map) {
 					let score = parseFloat(value.score).toString();
-					if(score == NaN || score == "undefined"){
+					if(score == null || score == "undefined"){
 						score = "No score";
 					}
 					csv_data= csv_data+key+","+score+"\r\n";
