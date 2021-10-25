@@ -538,18 +538,20 @@ app.post("/downloadCSV", (req,res) => {
 						}else{
 							s = "Y";
 						}
-						csv_data= csv_data+round_num+","+key+","+role+","+price+","+s+","+score+"\r\n";
+						csv_data= csv_data+round_num+","+value.name+","+role+","+price+","+s+","+score+"\r\n";
 					}
 					allUsers.forEach(logAllUsersElements_Round)
 				}
 
 				csv_data = csv_data+"玩家編號,總得分 \r\n";
 				function logAllUsersElements(value, key, map) {
+					/*
 					let score = parseFloat(value.score).toString();
 					if(score == null || score == "undefined"){
 						score = "No score";
 					}
-					csv_data= csv_data+key+","+score+"\r\n";
+					*/
+					csv_data= csv_data+value.name+","+value.score+"\r\n";
 				}
 								
 				allUsers.forEach(logAllUsersElements)
@@ -1130,7 +1132,7 @@ io.on('connection', (socket) => {
 				
 				let payer_socre = (Number(payer.price) - Number(money));
 				payer.score += payer_socre;
-				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+				thisRoom.round[Number(thisRound)].record.push({seller: receiver_name, buyer: payer_name, price: money});
 				
 				//個人交易紀錄
 				payer.myRecord.push({name: payer_name, role:"payer", price: money, score:payer_socre, status:1});
@@ -1211,7 +1213,7 @@ io.on('connection', (socket) => {
 							receiver.score += rec_score;							
 							payer.score += pay_score;
 							
-							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
+							thisRoom.round[Number(thisRound)].record.push({seller: receiver_name, buyer: payer_name, price: money});
 							
 							//個人交易紀錄
 							payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:pay_score, status:1});
