@@ -155,7 +155,7 @@ app.post("/login", function (req, res, next) {
 		if (!user) { return res.status(500).json({ message: 'login fall!', user: user }); }
 		req.logIn(user, { session: false }, function (err) {
 			if (err) { return next(err); }
-			var expiretime = Date.now() + 60 * 60 * 1000;
+			var expiretime = Date.now() + 3 * 60 * 60 * 1000;
 			const token = jwt.sign({ _id: user._id, email:user.email }, process.env.secret, { issuer:'Dio', expiresIn: '3h' })
 			res.json({ message: 'login success!', user: user, jwt: token, expiresIn: expiretime});
 		});
@@ -791,7 +791,7 @@ io.on('connection', (socket) => {
 					if(thisRoom.isGaming){
 						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間'});
 					}
-					thisRoom.Users.set(data.ID, { username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0, myRecord:[]});		//設定進入使用者的資料
+					thisRoom.Users.set(data.ID, { name:data.name, username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0, myRecord:[]});		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
 					allRooms.set(data.roomNum, thisRoom);		//更新房間資訊
 					socket.emit('enterRoom_resp',{status:1, msg:'已進入房間並連接socket', newToken: newToken});//回應enterRoom
