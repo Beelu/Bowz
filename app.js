@@ -1135,13 +1135,13 @@ io.on('connection', (socket) => {
 				thisRoom.round[Number(thisRound)].record.push({seller: receiver_name, buyer: payer_name, price: money});
 				
 				//個人交易紀錄
-				payer.myRecord.push({name: payer_name, role:"payer", price: money, score:payer_socre, status:1});
-       				receiver.myRecord.push({name: receiver_name, role:"receiver",price: money, score:receiver_score, status:1});
+				payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:payer_socre, status:1});
+       				receiver.myRecord.push({name: payer_name, role:"receiver",price: money, score:receiver_score, status:1});
 				
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}else{
-				payer.myRecord.push({name: payer_name, role:"payer", price: money, score:0, status:0});
-       				receiver.myRecord.push({name: receiver_name, role:"receiver",pprice: money, score:0, status:0});
+				payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:0, status:0});
+       				receiver.myRecord.push({name: payer_name, role:"receiver",pprice: money, score:0, status:0});
 			}
 
 			io.sockets.to(receiverSocket).emit('transcResp', chek_point);
