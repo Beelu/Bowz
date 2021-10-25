@@ -541,6 +541,7 @@ app.post("/downloadCSV", (req,res) => {
 							}
 						
 							csv_data= csv_data+round_num+","+value.name+","+role+","+price+","+s+","+score+"\r\n";
+						}catch(e){
 						}
 					}
 					allUsers.forEach(logAllUsersElements_Round)
