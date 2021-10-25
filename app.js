@@ -1131,13 +1131,13 @@ io.on('connection', (socket) => {
 				thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 				
 				//個人交易紀錄
-				payer.myRecord.push({username: payer.username, role:"payer", price: money, score:payer_socre, status:1});
-       				receiver.myRecord.push({username: receiver.username, role:"receiver",price: money, score:receiver_score, status:1});
+				payer.myRecord.push({name: payer.name, role:"payer", price: money, score:payer_socre, status:1});
+       				receiver.myRecord.push({name: receiver.name, role:"receiver",price: money, score:receiver_score, status:1});
 				
 				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 			}else{
-				payer.myRecord.push({username: payer.username, role:"payer", price: money, score:0, status:0});
-       				receiver.myRecord.push({username: receiver.username, role:"receiver",pprice: money, score:0, status:0});
+				payer.myRecord.push({name: payer.name, role:"payer", price: money, score:0, status:0});
+       				receiver.myRecord.push({name: receiver.name, role:"receiver",pprice: money, score:0, status:0});
 			}
 
 			io.sockets.to(receiverSocket).emit('transcResp', chek_point);
@@ -1209,14 +1209,14 @@ io.on('connection', (socket) => {
 							thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
 							
 							//個人交易紀錄
-							payer.myRecord.push({username: receiver.username, role:"payer", price: money, score:pay_score, status:1});
-							receiver.myRecord.push({username: payer.username, role:"receiver",price: money, score:rec_score, status:1});
+							payer.myRecord.push({name: receiver.name, role:"payer", price: money, score:pay_score, status:1});
+							receiver.myRecord.push({name: payer.name, role:"receiver",price: money, score:rec_score, status:1});
 							
 							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
 						}else{
 							//個人交易紀錄
-							payer.myRecord.push({username: receiver.username, role:"payer", price: money, score:0, status:0});
-							receiver.myRecord.push({username: payer.username, role:"receiver",price: money, score:0, status:0});
+							payer.myRecord.push({name: receiver.name, role:"payer", price: money, score:0, status:0});
+							receiver.myRecord.push({name: payer.name, role:"receiver",price: money, score:0, status:0});
 						}
 
 						io.sockets.to(payer_Socket).emit('payer_transcResp', chek_point);
