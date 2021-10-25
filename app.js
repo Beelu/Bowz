@@ -555,7 +555,7 @@ app.post("/downloadCSV", (req,res) => {
 						score = "No score";
 					}
 					*/
-					if(value.isManager==false){
+					if(!value.isManager){
 						csv_data= csv_data+value.name+","+value.score+"\r\n";
 					};
 				}
