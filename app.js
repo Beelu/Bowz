@@ -524,26 +524,36 @@ app.post("/downloadCSV", (req,res) => {
 	let msg;
 
 	try{
-		let RoomNum = req.body.roomNum;
-
-			async function run() {
-					
-				try {	
-					await client.connect();
-					const database = client.db("myFirstDatabase");
-					const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
-
-					//新增交易紀錄
-					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
-					record_res = record_res +"這!";
+		let RoomNum = req.body.roomNum;					
+		await client.connect();
+		const database = client.db("myFirstDatabase");
+		const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
+		
+		//新增交易紀錄
+		async function insert() {	
+			try {	
+				await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
+				record_res = record_res +"這!";
 					const result = await TranscReocrd_model.find().toArray();
 					record_res = record_res + result;
 			} catch(e) {
-				msg = "錯誤";
+				msg = "錯誤1";
 			}
 		}
-		run();
-		msg = "成功";
+		async function find() {	
+			try {	
+				record_res = record_res +"這!";
+				const result = await TranscReocrd_model.find().toArray();
+				record_res = record_res + result;
+			} catch(e) {
+				msg = "錯誤2";
+			}
+		}
+		
+		insert();
+		find();
+		
+		msg = msg+"成功";
 		res.json({record_res: record_res, msg:msg, RoomNum: RoomNum});
 	}
 	catch(e){
