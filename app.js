@@ -15,13 +15,6 @@ var express = require("express"),
 	bodyparser = require("body-parser"),
 	mongoose = require("mongoose"),
 	passport = require("passport"),
-	passportLocal = require("passport-local"),
-	passportLocalMongoose = require("passport-local-mongoose"),
-	fs = require("fs"),
-	server = require("http").Server(app),
-	https = require('https'),
-	//io = require("socket.io")(server),
-	path = require("path"),
 	middleware = require("./middleware"),
 	user = require("./models/user"),
 	transaction = require('./models/transaction'),
@@ -1086,7 +1079,7 @@ io.on('connection', (socket) => {
 		try{
 			if(thisuser.isManager){
 				thisRoom.Manager_SocketID = socket.id;
-				var s_id = thisuser.socketID;
+				var s_id = thisRoom.Manager_SocketID;
 			}else{
 				thisuser.socketID = socket.id;
 				s_id = thisuser.socketID;
