@@ -554,8 +554,8 @@ app.post("/downloadCSV", (req,res) => {
 			}
 		}
 		
-		await insert();
-		await find();
+		insert();
+		find();
 		
 		msg = msg+"成功";
 		res.json({record: record_res, msg:msg, RoomNum: RoomNum});
