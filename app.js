@@ -518,7 +518,7 @@ app.post("/totalChartData", (req,res) => {
 	let data = totalChartData.get(req.body.roomNum);
 	res.json({data:data});
 })
-
+//modi downloadcsv
 app.post("/downloadCSV", (req,res) => {
 	let record_res = null;
 	let msg;
@@ -538,7 +538,7 @@ app.post("/downloadCSV", (req,res) => {
 
 							
 					const query = ({ RoomNum: req.body.roomNum} );
-					const result = await TranscReocrd_model.find(query).toArray()
+					const result = await TranscReocrd_model.find(query).toArray();
 					record_res = record_res +"這!"+ result;
 			} catch(e) {
 				msg = "錯誤";
