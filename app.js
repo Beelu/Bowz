@@ -537,7 +537,7 @@ app.post("/downloadCSV", (req,res) => {
 					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
 
 							
-					const query = ({ RoomNum: req.body.roomNum} );
+					const query = ({ });
 					const result = await TranscReocrd_model.find(query).toArray();
 					record_res = record_res +"這!"+ result;
 			} catch(e) {
