@@ -957,14 +957,9 @@ io.on('connection', (socket) => {
 			let thisRoom = allRooms.get(req.roomNum);
 			thisRoom.Users.delete(req.teacherID)
 
-			thisRoom.Users.forEach((value,key)=>{
-				if(value.isManager){
-					thisRoom.Users.delete(key)
-				}
-			})
 			
 			if(thisRoom.isGaming == true){
-				io.sockets.in(req.roomNum).emit('shuffleResponse','error');
+				io.sockets.in(req.roomNum).emit('shuffleResponse','shuffleError');
 			}else{
 
 				let userArr = Array.from(thisRoom.Users)
@@ -1002,29 +997,34 @@ io.on('connection', (socket) => {
 
 	socket.on('sameSetShuffle',function(req){
 		try{
+			
 			let thisRoom = allRooms.get(req.roomNum);
 			let userArr = Array.from(thisRoom.Users)
 			let newUserArr = []
 			let chartData = tmpChartData.get(req.roomNum)
 
-			chartData.buyer.forEach( value =>{
-				let ranNum = Math.floor(Math.random() * userArr.length)
-				userArr[ranNum][1].price = value
-				userArr[ranNum][1].role = 'buyer'
-				newUserArr.push(userArr[ranNum])
-				userArr.splice(ranNum,1)
-			})
-			
-			chartData.seller.forEach( value =>{
-				let ranNum = Math.floor(Math.random() * userArr.length)
-				userArr[ranNum][1].price = value
-				userArr[ranNum][1].role = 'seller'
-				newUserArr.push(userArr[ranNum])
-				userArr.splice(ranNum,1)
-			})
-			thisRoom.Users = new Map(newUserArr)
-			allRooms.set(req.roomNum, thisRoom);
-			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse',{userData:Array.from(thisRoom.Users)});
+			if(thisRoom.isGaming == true){
+				io.sockets.in(req.roomNum).emit('sameSetShuffleResponse','sameSetShuffleError');
+			}else{
+				chartData.buyer.forEach( value =>{
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price = value
+					userArr[ranNum][1].role = 'buyer'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
+				})
+				
+				chartData.seller.forEach( value =>{
+					let ranNum = Math.floor(Math.random() * userArr.length)
+					userArr[ranNum][1].price = value
+					userArr[ranNum][1].role = 'seller'
+					newUserArr.push(userArr[ranNum])
+					userArr.splice(ranNum,1)
+				})
+				thisRoom.Users = new Map(newUserArr)
+				allRooms.set(req.roomNum, thisRoom);
+				io.sockets.in(req.roomNum).emit('sameSetShuffleResponse',{userData:Array.from(thisRoom.Users)});
+			}
 		}
 		catch(e){
 			io.sockets.in(req.roomNum).emit('sameSetShuffleResponse','error');
