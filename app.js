@@ -960,11 +960,7 @@ io.on('connection', (socket) => {
 				io.sockets.in(req.roomNum).emit('shuffleResponse','shuffleError');
 			}else{
 
-				thisRoom.Users.forEach((value,key)=>{
-					if(value.isManager){
-						thisRoom.Users.delete(key)
-					}
-				})
+				thisRoom.Users.delete(req.teacherID)
 				let userArr = Array.from(thisRoom.Users)
 				let newUserArr = []
 				let roundNum = req.roundNum;
