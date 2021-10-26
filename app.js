@@ -525,13 +525,14 @@ app.post("/downloadCSV", (req,res) => {
 
 	try{
 		let RoomNum = req.body.roomNum;					
-		await client.connect();
-		const database = client.db("myFirstDatabase");
-		const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
+
 		
 		//新增交易紀錄
 		async function insert() {	
 			try {	
+				await client.connect();
+				const database = client.db("myFirstDatabase");
+				const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 				await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
 				record_res = record_res +"這!";
 					const result = await TranscReocrd_model.find().toArray();
@@ -542,6 +543,9 @@ app.post("/downloadCSV", (req,res) => {
 		}
 		async function find() {	
 			try {	
+				await client.connect();
+				const database = client.db("myFirstDatabase");
+				const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 				record_res = record_res +"這!";
 				const result = await TranscReocrd_model.find().toArray();
 				record_res = record_res + result;
