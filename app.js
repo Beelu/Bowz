@@ -955,13 +955,16 @@ io.on('connection', (socket) => {
 	socket.on('shuffle',(req)=>{
 		try{
 			let thisRoom = allRooms.get(req.roomNum);
-			thisRoom.Users.delete(req.teacherID)
 
-			
-			if(thisRoom.isGaming == true){
+			if(thisRoom.isGaming){
 				io.sockets.in(req.roomNum).emit('shuffleResponse','shuffleError');
 			}else{
 
+				thisRoom.Users.forEach((value,key)=>{
+					if(value.isManager){
+						thisRoom.Users.delete(key)
+					}
+				})
 				let userArr = Array.from(thisRoom.Users)
 				let newUserArr = []
 				let roundNum = req.roundNum;
