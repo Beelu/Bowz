@@ -538,14 +538,8 @@ app.post("/downloadCSV", (req,res) => {
 
 							
 					const query = ({ RoomNum: req.body.roomNum} );
-					await TranscReocrd_model.find(query).toArray((err, fnid_res) =>{
-					if(err){
-						msg = "查詢錯誤";
-					}
-					else{
-						record_res = record_res +"這!"+ fnid_res;
-					}
-
+					const result = await TranscReocrd_model.find(query).toArray()
+					record_res = record_res +"這!"+ result;
 				});
 							
 
