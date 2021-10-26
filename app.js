@@ -547,8 +547,10 @@ app.post("/downloadCSV", (req,res) => {
 				const database = client.db("myFirstDatabase");
 				const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 				record_res = record_res +"這!";
-				const result = await TranscReocrd_model.find().toArray();
-				record_res = record_res + result;
+				
+				let query = {RoomNum: "123"}; 
+				let res = await TranscReocrd_model.findOne(query);
+				record_res = record_res + res;
 			} catch(e) {
 				msg = "錯誤2";
 			}
