@@ -520,8 +520,8 @@ app.post("/totalChartData", (req,res) => {
 })
 //modi downloadcsv
 app.post("/downloadCSV", (req,res) => {
-	let record_res = null;
-	let msg;
+	var record_res = null;
+	var msg;
 
 	try{
 		let RoomNum = req.body.roomNum;					
