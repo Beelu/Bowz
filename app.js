@@ -18,6 +18,7 @@ var express = require("express"),
 	middleware = require("./middleware"),
 	user = require("./models/user"),
 	transaction = require('./models/transaction'),
+	Room_TranscReocrd_csv = require('/modles/Room_TranscReocrd_csv'),
 	record = require('./models/record'),
 	room = require('./models/room'),
 	async = require("async"),
@@ -363,6 +364,9 @@ app.post("/createRoom", middleware.checkManager, (req, res) => {
 	})
 });
 
+//Room_TranscReocrd_csv
+
+
 //編輯房間
 app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 	var editRoom = {
@@ -510,7 +514,7 @@ app.post("/totalChartData", (req,res) => {
 })
 
 app.post("/downloadCSV", (req,res) => {
-	let csv_data = null;
+	let record_res = null;
 	let msg;
 
 	try{
@@ -521,58 +525,36 @@ app.post("/downloadCSV", (req,res) => {
 			let allUsers = thisRoom.Users;
 
 			if(allUsers){
-				csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
-				
-				//個人交易紀錄
-				//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
-				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
-				for(let i=0; i<thisRoom.round.length; i++){
-					function logAllUsersElements_Round(value, key, map) {
-						try{
-							let role = value.myRecord[i].role;
-							let price = value.myRecord[i].price;
-							let score = value.myRecord[i].score;
-							let status = value.myRecord[i].status;
-							let round_num = i+1;
-							if(status==0) {
-								var s = "N";
-							}else{
-								s = "Y";
-							}
-						
-							csv_data= csv_data+round_num+","+value.name+","+role+","+price+","+s+","+score+"\r\n";
-						}catch(e){
-						}
-					}
-					allUsers.forEach(logAllUsersElements_Round)
+				async function run() {
+					
+					try {	
+							await client.connect();
+							const database = client.db("myFirstDatabase");
+							const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 
-					try{
-						csv_data = csv_data + " 老師發放 \r\n 回合, 玩家編號,金額,得分 \r\n";
+							//新增交易紀錄
+							await TranscReocrd_model.insertOne({RoomNum: RoomNum});
 
-						let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
-						let round_num = i+1;
-						for(let j=0; j<admin_transc_record.length; j++){
-							csv_data = csv_data + round_num +","+ admin_transc_record[j].name +","+ admin_transc_record[j].money +","+ admin_transc_record[j].score;
-						}
-					}catch(e){
+							
+							const query = ({ RoomNum: RoomNum} );
+							await TranscReocrd_model.findOne(query).toArray((err, fnid_res) =>{
+								if(err){
+									msg = "查詢錯誤";
+								}
+								else{
+									record_res = fnid_res;
+								}
 
+							});
+							
+
+					} catch(e) {
+					
 					}
 				}
+				run();
+				msg = "成功";
 
-				csv_data = csv_data+"玩家編號,總得分 \r\n";
-				function logAllUsersElements(value, key, map) {
-					/*
-					let score = parseFloat(value.score).toString();
-					if(score == null || score == "undefined"){
-						score = "No score";
-					}
-					*/
-					if(!value.isManager){
-						csv_data= csv_data+value.name+","+value.score+"\r\n";
-					};
-				}
-								
-				allUsers.forEach(logAllUsersElements)
 			}else{//房間沒有玩家存在
 				msg = "房間沒有玩家存在";
 			}
@@ -581,10 +563,10 @@ app.post("/downloadCSV", (req,res) => {
 			msg = "房間不存在";
 		}
 
-		res.json({data:csv_data, msg:msg});
+		res.json({record_res: record_res, msg:msg});
 	}catch(e){
 		msg = "未知的錯誤";
-		res.json({data:csv_data, msg:msg});
+		res.json({msg:msg});
 	}
 
 })
@@ -848,6 +830,80 @@ io.on('connection', (socket) => {
 				});
 			}
 			// console.log(io.sockets.sockets)
+			let csv_data = null;
+			let msg;
+
+			try{
+				let RoomNum =data.roomNum;
+				let thisRoom = allRooms.get(RoomNum);
+
+				if(thisRoom){
+					let allUsers = thisRoom.Users;
+
+					if(allUsers){
+						csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
+						
+						//個人交易紀錄
+						//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
+						//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
+						for(let i=0; i<thisRoom.round.length; i++){
+							function logAllUsersElements_Round(value, key, map) {
+								try{
+									let role = value.myRecord[i].role;
+									let price = value.myRecord[i].price;
+									let score = value.myRecord[i].score;
+									let status = value.myRecord[i].status;
+									let round_num = i+1;
+									if(status==0) {
+										var s = "N";
+									}else{
+										s = "Y";
+									}
+								
+									csv_data= csv_data+round_num+","+value.name+","+role+","+price+","+s+","+score+"\r\n";
+								}catch(e){
+								}
+							}
+							allUsers.forEach(logAllUsersElements_Round)
+
+							try{
+								csv_data = csv_data + " 老師發放 \r\n 回合, 玩家編號,金額,得分 \r\n";
+
+								let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
+								let round_num = i+1;
+								for(let j=0; j<admin_transc_record.length; j++){
+									csv_data = csv_data + round_num +","+ admin_transc_record[j].name +","+ admin_transc_record[j].money +","+ admin_transc_record[j].score;
+								}
+							}catch(e){
+
+							}
+						}
+
+						csv_data = csv_data+"玩家編號,總得分 \r\n";
+						function logAllUsersElements(value, key, map) {
+							/*
+							let score = parseFloat(value.score).toString();
+							if(score == null || score == "undefined"){
+								score = "No score";
+							}
+							*/
+							if(!value.isManager){
+								csv_data= csv_data+value.name+","+value.score+"\r\n";
+							}
+						}
+										
+						allUsers.forEach(logAllUsersElements)
+					}else{//房間沒有玩家存在
+						msg = "房間沒有玩家存在";
+					}
+
+				}else{//房間不存在
+					msg = "房間不存在";
+				}
+
+			}catch(e){
+				msg = "未知的錯誤";
+			}
 		}       
 		catch(e){
 		}
