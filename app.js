@@ -537,7 +537,7 @@ app.post("/downloadCSV", (req,res) => {
 					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum});
 
 							
-					const query = ({ RoomNum: RoomNum} );
+					const query = ({ RoomNum: req.body.roomNum} );
 					await TranscReocrd_model.findOne(query).toArray((err, fnid_res) =>{
 					if(err){
 						msg = "查詢錯誤";
