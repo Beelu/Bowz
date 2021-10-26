@@ -77,7 +77,8 @@ allRooms.set("9487",{
 	roomName:"保志的測試",
 	Users:testusers,
 	nowRound:-1,
-	admin_transc_times:0
+	admin_transc_times:0,
+	Manager_SocketID:null
 })
 //初始設置
 app.set("view engine", "ejs");
@@ -356,7 +357,8 @@ app.post("/createRoom", middleware.checkManager, (req, res) => {
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime,
 		active: false,
-		nowRoomID: null
+		nowRoomID: null,
+		Manager_SocketID:null
 	}
 
 	room.create(createRoom, (err, newRoom) => {
@@ -378,7 +380,8 @@ app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 		roomName: req.body.roomName,
 		roundTime: req.body.roundTime,
 		active: false,
-		nowRoomID: null
+		nowRoomID: null,
+		Manager_SocketID:null
 	}
 
 	room.findById(req.params.id, (err, found) => {
@@ -454,7 +457,8 @@ app.post("/openRoom", middleware.checkManager, (req, res) => {
 				Users:Users,
 				nowRound:-1,
 				isGaming: false,
-				admin_transc_times:0
+				admin_transc_times:0,
+				Manager_SocketID:null
 			});
 			findroom.active = true;
 			findroom.nowRoomID = randomID;
@@ -1061,14 +1065,14 @@ io.on('connection', (socket) => {
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 		var allUsers = thisRoom.Users;//獲取所有Users
 		var thisuser = allUsers.get(data.user_id);
-
-		thisuser.socketID = socket.id;
-		var s_id = thisuser.socketID;
-		
 		try{
-			//test
-			//var testid =  allUsers.get(String(234)).socketID;
-			//socket.broadcast.to(testid).emit('testbroadcast', {msg:'hello!'});
+			if(thisuser.isManager){
+				thisRoom.Manager_SocketID = socket.id;
+				var s_id = thisuser.socketID;
+			}else{
+				thisuser.socketID = socket.id;
+				s_id = thisuser.socketID;
+			}
 
 			io.sockets.to(s_id).emit('testsocket',  {s:s_id});
 		}       
