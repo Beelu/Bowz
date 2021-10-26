@@ -525,52 +525,39 @@ app.post("/downloadCSV", (req,res) => {
 
 	try{
 		let RoomNum = req.body.roomNum;
-		let thisRoom = allRooms.get(RoomNum);
 
-		if(thisRoom){
-			let allUsers = thisRoom.Users;
-
-			if(allUsers){
-				async function run() {
+			async function run() {
 					
-					try {	
-							await client.connect();
-							const database = client.db("myFirstDatabase");
-							const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
+				try {	
+					await client.connect();
+					const database = client.db("myFirstDatabase");
+					const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 
-							//新增交易紀錄
-							await TranscReocrd_model.insertOne({RoomNum: RoomNum});
+					//新增交易紀錄
+					await TranscReocrd_model.insertOne({RoomNum: RoomNum});
 
 							
-							const query = ({ RoomNum: RoomNum} );
-							await TranscReocrd_model.findOne(query).toArray((err, fnid_res) =>{
-								if(err){
-									msg = "查詢錯誤";
-								}
-								else{
-									record_res = fnid_res;
-								}
-
-							});
-							
-
-					} catch(e) {
-					
+					const query = ({ RoomNum: RoomNum} );
+					await TranscReocrd_model.findOne(query).toArray((err, fnid_res) =>{
+					if(err){
+						msg = "查詢錯誤";
 					}
-				}
-				run();
-				msg = "成功";
+					else{
+						record_res = fnid_res;
+					}
 
-			}else{//房間沒有玩家存在
-				msg = "房間沒有玩家存在";
+				});
+							
+
+			} catch(e) {
+				msg = "錯誤";
 			}
-
-		}else{//房間不存在
-			msg = "房間不存在";
 		}
-
+		run();
+		msg = "成功";
 		res.json({record_res: record_res, msg:msg});
-	}catch(e){
+	}
+	catch(e){
 		msg = "未知的錯誤";
 		res.json({msg:msg});
 	}
