@@ -67,7 +67,7 @@ allRooms.set("9487",{
 		buyMin: 20,
 		buyMax: 120,
 		item: "yanshou",
-		record:[{seller:"456", buyer:"123", price:100}, {seller:"234", buyer:"678", price:200}]}
+		record:[{seller:"456", buyer:"123", price:100}, {seller:"234", buyer:"678", price:200}]},
 	],
 	initMoney: 100,
 	isGaming:false,
@@ -78,7 +78,8 @@ allRooms.set("9487",{
 	Users:testusers,
 	nowRound:-1,
 	admin_transc_times:0,
-	Manager_SocketID:null
+	Manager_SocketID:null,
+	admin_transc_Record:[]
 })
 //初始設置
 app.set("view engine", "ejs");
@@ -358,7 +359,7 @@ app.post("/createRoom", middleware.checkManager, (req, res) => {
 		roundTime: req.body.roundTime,
 		active: false,
 		nowRoomID: null,
-		Manager_SocketID:null
+		Manager_SocketID:null,
 	}
 
 	room.create(createRoom, (err, newRoom) => {
@@ -381,7 +382,7 @@ app.post("/editRoom/:id", middleware.checkOwnership, (req, res) => {
 		roundTime: req.body.roundTime,
 		active: false,
 		nowRoomID: null,
-		Manager_SocketID:null
+		Manager_SocketID:null,
 	}
 
 	room.findById(req.params.id, (err, found) => {
@@ -434,6 +435,7 @@ app.post("/openRoom", middleware.checkManager, (req, res) => {
 	}
 
 	var Users = new Map();				//新增該房間使用者名單
+	var admin_transc_Record = new Map();	
 	//Users.set(req.body.ID, { username: req.body.name, isManager: true });					//設定進入開房者的資料
 	room.findById(req.body.roomID, (err, findroom) => {
 		if(err){
@@ -458,7 +460,8 @@ app.post("/openRoom", middleware.checkManager, (req, res) => {
 				nowRound:-1,
 				isGaming: false,
 				admin_transc_times:0,
-				Manager_SocketID:null
+				Manager_SocketID:null,
+				admin_transc_Record:admin_transc_Record
 			});
 			findroom.active = true;
 			findroom.nowRoomID = randomID;
@@ -530,7 +533,7 @@ app.post("/downloadCSV", (req,res) => {
 				//個人交易紀錄
 				//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
 				//receiver.myRecord.push({userid: data.payer_id, role:"receiver",price: money, score:rec_score, status:1});
-				for(var i=0; i<thisRoom.round.length; i++){
+				for(let i=0; i<thisRoom.round.length; i++){
 					function logAllUsersElements_Round(value, key, map) {
 						try{
 							let role = value.myRecord[i].role;
@@ -549,6 +552,18 @@ app.post("/downloadCSV", (req,res) => {
 						}
 					}
 					allUsers.forEach(logAllUsersElements_Round)
+
+					try{
+						csv_data = csv_data + " 老師發放 \r\n 回合, 玩家編號,金額,得分 \r\n";
+
+						let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
+						let round_num = i+1;
+						for(let j=0; j<admin_transc_record.length; j++){
+							csv_data = csv_data + round_num +","+ admin_transc_record[j].name +","+ admin_transc_record[j].money +","+ admin_transc_record[j].score;
+						}
+					}catch(e){
+
+					}
 				}
 
 				csv_data = csv_data+"玩家編號,總得分 \r\n";
@@ -733,7 +748,7 @@ app.post('/getRoomList', (req, res)=>{
                         res.json(room_list);
                         console.log("rreee",room_list)
                 } finally {
-
+				
                 }
         }
         run()
@@ -889,6 +904,9 @@ io.on('connection', (socket) => {
 				let currentTime = new Date();
 				let tmpTime = currentTime.getTime();
 				let expireTime = new Date();
+				let admin_transc_record = [];
+				allRooms.get(req.roomNum).admin_transc_Record.set(req.roomNum.nowRound, admin_transc_record);
+
 				expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
 				allRooms.get(req.roomNum).expireTime = expireTime		
 				
@@ -1089,13 +1107,6 @@ io.on('connection', (socket) => {
   	*/
 	  socket.on('checkQRcode', (data) =>{
 		  
-		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
-		var allUsers = thisRoom.Users;//獲取所有Users
-			
-		var payer = allUsers.get(data.payer_id)//獲取付款者ID
-		var payerSocket = payer.socketID;
-		var receiver_id = data.receiver_id;
-		  
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
 			var allUsers = thisRoom.Users;//獲取所有Users
@@ -1105,7 +1116,6 @@ io.on('connection', (socket) => {
 			var receiver_id = data.receiver_id;
 			
 			io.sockets.to(payerSocket).emit('transCheckReq', receiver_id);
-			
 		}       
 		catch(e){
 			io.sockets.to(payerSocket).emit('transCheckReq',data)
@@ -1117,6 +1127,7 @@ io.on('connection', (socket) => {
 	//聽取回應
 	socket.on('get_chek_point', (data)=>{
 		var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+		var admin_socketid = thisRoom.Manager_SocketID;
 		var allUsers = thisRoom.Users;//獲取所有Users
 
 		var thisRound = data.round;//獲取本回合
@@ -1145,9 +1156,10 @@ io.on('connection', (socket) => {
 				
 				//個人交易紀錄
 				payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:payer_socre, status:1});
-       				receiver.myRecord.push({name: payer_name, role:"receiver",price: money, score:receiver_score, status:1});
+       			receiver.myRecord.push({name: payer_name, role:"receiver",price: money, score:receiver_score, status:1});
 				
-				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+				socket.emit('getRecordRequest', thisRoom.round[thisRound].record);
+				io.sockets.to(admin_socketid).emit('get_admin_transc_rsp', {round: thisRoom.round[Number(thisRound)] });
 			}else{
 				payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:0, status:0});
        				receiver.myRecord.push({name: payer_name, role:"receiver",pprice: money, score:0, status:0});
@@ -1193,6 +1205,7 @@ io.on('connection', (socket) => {
 
 		try{
 			var thisRoom = allRooms.get(data.roomNum);//獲取房間id
+			var admin_socketid = thisRoom.Manager_SocketID;
 
 			if(thisRoom){
 				var allUsers = thisRoom.Users;//獲取所有Users
@@ -1228,7 +1241,8 @@ io.on('connection', (socket) => {
 							payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:pay_score, status:1});
 							receiver.myRecord.push({name: payer_name, role:"receiver",price: money, score:rec_score, status:1});
 							
-							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);;
+							socket.emit('getRecordRequest', thisRoom.round[thisRound].record);
+							io.sockets.to(admin_socketid).emit('get_admin_transc_rsp', {round: thisRoom.round[Number(thisRound)] });
 						}else{
 							//個人交易紀錄
 							payer.myRecord.push({name: receiver_name, role:"payer", price: money, score:0, status:0});
@@ -1273,43 +1287,44 @@ io.on('connection', (socket) => {
                 var money = Number(data.money);//交易金額
 
                 //var payer = data.payer_id//獲取付款者ID
-		//var payer_money = allUsers.get(payer).money
+				//var payer_money = allUsers.get(payer).money
                 var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
                 var receiverSocket = receiver.socketID;
 		
                 var chek_point = 1;
-		var used_times  = thisRoom.admin_transc_times;
+				var used_times  = thisRoom.admin_transc_times;
                 var limit_times = Number(data.limit_times);
 		/*
 		if(payer_money==0){
 			allUsers.get(payer).money = 99999;
 		}
 		*/
-                try {
-                        if((used_times<limit_times) || (limit_times==-1)){
+        try {
+            if((used_times<limit_times) || (limit_times==-1)){
 				if(receiver.is_admin_transc==0){
-					receiver.money += Number(money);
-					//thisRoom.round[Number(thisRound)].record.push({seller: data.receiver_id, buyer: data.payer_id, price: money});
-					io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-					receiver.is_admin_transc=1;
-					used_times+=1;
-				}else{
-					chek_point = -2;
-	                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-				}
-                               
+						receiver.money += Number(money);
+						receiver.score += Number(money);
 
-                        }
-                        else{
-                                chek_point = -1;
-                                io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+						thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
+						io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+						receiver.is_admin_transc=1;
+						used_times+=1;
+				}else{
+						chek_point = -2;
+						io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+				}
+							
 			}
-                }
-                catch(e){
-                        chek_point = 0;
-                        io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-                }
-                thisRoom.admin_transc_times = used_times;
+			else{
+				chek_point = -1;
+				io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+			}
+        }
+        catch(e){
+            chek_point = 0;
+            io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+        }
+            thisRoom.admin_transc_times = used_times;
         });
 
 	
