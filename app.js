@@ -534,7 +534,7 @@ app.post("/downloadCSV", (req,res) => {
 					const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 
 					//新增交易紀錄
-					await TranscReocrd_model.insertOne({RoomNum: RoomNum});
+					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum});
 
 							
 					const query = ({ RoomNum: RoomNum} );
@@ -555,7 +555,7 @@ app.post("/downloadCSV", (req,res) => {
 		}
 		run();
 		msg = "成功";
-		res.json({record_res: record_res, msg:msg});
+		res.json({record_res: record_res, msg:msg, RoomNum: RoomNum});
 	}
 	catch(e){
 		msg = "未知的錯誤";
