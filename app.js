@@ -549,8 +549,7 @@ app.post("/downloadCSV", (req,res) => {
 				record_res = record_res +"這!";
 				
 				let query = {RoomNum: "123"}; 
-				let res = await TranscReocrd_model.findOne(query);
-				record_res = record_res + res;
+				var res = await TranscReocrd_model.findOne(query);
 			} catch(e) {
 				msg = "錯誤2";
 			}
@@ -560,7 +559,7 @@ app.post("/downloadCSV", (req,res) => {
 		find();
 		
 		msg = msg+"成功";
-		res.json({record_res: record_res, msg:msg, RoomNum: RoomNum});
+		res.json({record_res: res, msg:msg, RoomNum: RoomNum});
 	}
 	catch(e){
 		msg = "未知的錯誤";
