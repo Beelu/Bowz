@@ -543,10 +543,10 @@ app.post("/downloadCSV", (req,res) => {
 			try {	
 				await client.connect();
 				const database = client.db("myFirstDatabase");
-				const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
+				const TranscReocrd_model = database.collection("records");
 				record_res = record_res +"這!";
 				
-				let query = {RoomNum: "123"}; 
+				let query = {roomNum: "9487"}; 
 				record_res = await TranscReocrd_model.findOne(query).toArray;
 			} catch(e) {
 				msg = "錯誤2";
