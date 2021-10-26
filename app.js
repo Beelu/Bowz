@@ -534,16 +534,16 @@ app.post("/downloadCSV", (req,res) => {
 					const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
 
 					//新增交易紀錄
-					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum});
+					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
 
 							
 					const query = ({ RoomNum: req.body.roomNum} );
-					await TranscReocrd_model.findOne(query).toArray((err, fnid_res) =>{
+					await TranscReocrd_model.find(query).toArray((err, fnid_res) =>{
 					if(err){
 						msg = "查詢錯誤";
 					}
 					else{
-						record_res = fnid_res;
+						record_res = record_res +"這!"+ fnid_res;
 					}
 
 				});
