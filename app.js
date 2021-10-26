@@ -536,9 +536,7 @@ app.post("/downloadCSV", (req,res) => {
 					//新增交易紀錄
 					await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
 
-							
-					const query = ({ });
-					const result = await TranscReocrd_model.find(query).toArray();
+					const result = await TranscReocrd_model.find().toArray();
 					record_res = record_res +"這!"+ result;
 			} catch(e) {
 				msg = "錯誤";
