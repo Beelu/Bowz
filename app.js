@@ -1516,10 +1516,10 @@ io.on('connection', (socket) => {
 	//============高鵬雲的部分結束=============//
 });
 
-// server.listen(3000, process.env.IP, function () {
+// server.listen(8080, process.env.IP, function () {
 // 	console.log("Server Start!");
 // });
-httpsServer.listen(3000, process.env.IP, function () {
+httpsServer.listen(8080, process.env.IP, function () {
 	console.log("Server Start!");
 });
 
