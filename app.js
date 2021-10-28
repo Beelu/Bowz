@@ -115,6 +115,10 @@ var io = require("socket.io")(httpsServer, {
 var url = process.env.databaseURL2 //|| "mongodb://localhost/project";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 const client = new MongoClient(url);
+user.findOne({},  function (err, founduser) {
+	if(err){console.log(err);}
+	console.log(founduser)
+});
 
 //passport
 app.use(require("express-session")({
