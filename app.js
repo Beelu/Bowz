@@ -27,6 +27,7 @@ var express = require("express"),
 	transaction = require('./models/transaction'),
 	record = require('./models/record'),
 	room = require('./models/room'),
+	TranscReocrdCSV = require('./models/TranscReocrdCSVSchema'),
 	async = require("async"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
@@ -523,41 +524,29 @@ app.post("/downloadCSV", (req,res) => {
 	var record_res = null;
 	var msg;
 
-	try{
-		let RoomNum = req.body.roomNum;					
+	try{				
 
-		
-		//新增交易紀錄
-		async function insert() {	
-			try {	
-				await client.connect();
-				const database = client.db("myFirstDatabase");
-				const TranscReocrd_model = database.collection("Room_TranscReocrd_csv");
-				await TranscReocrd_model.insertOne({RoomNum: req.body.roomNum , data: "測試"});
-				
-			} catch(e) {
-				msg = "錯誤1";
+		var createTranscReocrdCSV = {
+			RoomNum: req.roomNum,
+			transactions: req.record
+		};
+	
+		TranscReocrdCSV.create(createTranscReocrdCSV, (err, newRoom) => {
+			if (err) {
+				return res.json({message:err})
 			}
-		}
-		async function find() {	
-			try {	
-				await client.connect();
-				const database = client.db("myFirstDatabase");
-				const TranscReocrd_model = database.collection("records");
-				record_res = record_res +"這!";
-				
-				let query = {roomNum: "9487"}; 
-				record_res = await TranscReocrd_model.findOne(query).toArray;
-			} catch(e) {
-				msg = "錯誤2";
-			}
-		}
+			msg = "successfully create TranscReocrdCSV";
+		});
+
+		TranscReocrdCSV.findOne({ RoomNum: req.roomNum }, (err, foundrecord) => {
+				if(err){
+					msg = msg+ "error found!";
+				}
+				record_res = foundrecord
+			
+		});
 		
-		insert();
-		find();
-		
-		msg = msg+"成功";
-		res.json({record: record_res, msg:msg, RoomNum: RoomNum});
+		res.json({message:"successfully create TranscReocrdCSV.", record: record_res});
 	}
 	catch(e){
 		msg = "未知的錯誤";
