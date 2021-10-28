@@ -110,7 +110,7 @@ var io = require("socket.io")(httpsServer, {
 })
 
 //資料庫初始設置
-var url = process.env.databaseURL //|| "mongodb://localhost/project";
+var url = process.env.databaseURL2 //|| "mongodb://localhost/project";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 const client = new MongoClient(url);
 
