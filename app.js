@@ -548,14 +548,14 @@ app.post("/downloadCSV", (req,res) => {
 					const query = { RoomNum: "123" };
 					const _rrecord = await transcrecordcsvs_model.find(query).toArray();
 					_record = _rrecord;
-					
+					res.json(_record);
 			} catch(e){
 					msg = msg + "failed find room...";
 			}
 		}
 		findReocrd();
 		
-		res.json(_record);
+		
 	}
 	catch(e){
 		msg = "未知的錯誤";
