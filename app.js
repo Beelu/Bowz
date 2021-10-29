@@ -521,11 +521,10 @@ app.post("/totalChartData", (req,res) => {
 })
 //modi downloadcsv
 app.post("/downloadCSV", (req,res) => {
-	var record_res = null;
+	
 	var msg;
 
 	try{				
-
 		var createTranscReocrdCSV = {
 			RoomNum: req.body.roomNum,
 			transactions: req.body.record
@@ -542,11 +541,10 @@ app.post("/downloadCSV", (req,res) => {
 				if(err){
 					msg = msg+ "error found!";
 				}
-				record_res = foundrecord.transactions;
-			
+				var record_ = foundrecord.transactions;
+				res.json({message:"successfully create TranscReocrdCSV.", record: record_});
 		});
 		
-		res.json({message:"successfully create TranscReocrdCSV.", record: record_res});
 	}
 	catch(e){
 		msg = "未知的錯誤";
