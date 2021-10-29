@@ -541,7 +541,7 @@ app.post("/downloadCSV", (req,res) => {
 				if(err){
 					msg = msg+ "error found!";
 				}
-				var record_ = foundrecord.toArray;
+				var record_ = foundrecord;
 				res.json({message:"successfully create TranscReocrdCSV.", record: record_});
 		});
 		
