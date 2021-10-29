@@ -523,6 +523,7 @@ app.post("/totalChartData", (req,res) => {
 app.post("/downloadCSV", (req,res) => {
 	
 	var msg;
+	var _record;
 
 	try{				
 		var createTranscReocrdCSV = {
@@ -545,15 +546,16 @@ app.post("/downloadCSV", (req,res) => {
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
 					const query = { RoomNum: req.body.roomNum };
-					const _record = await transcrecordcsvs_model.findOne(query).toArray();
+					_record = await transcrecordcsvs_model.find(query).toArray();
 
-					res.json({msg: msg, record:_record[0].transactions});
+					
 			} catch(e){
 					msg = msg + "failed find room..."
 					res.json({msg: msg});
 			}
 		}
 		findReocrd();
+		res.json({msg: msg, record:_record});
 	}
 	catch(e){
 		msg = "未知的錯誤";
