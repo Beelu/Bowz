@@ -953,7 +953,7 @@ io.on('connection', (socket) => {
 				totalChartData.set(req.roomNum,chartData);
 				allRooms.get(req.roomNum).nowRound+=1;
 				allRooms.get(req.roomNum).isGaming = true;
-				io.sockets.in(req.roomNum).emit('startGameResponse', 'success');
+				io.sockets.in(req.roomNum).emit('startGameResponse', {msg:'success', admin_transc_Record:allRooms.get(req.roomNum).admin_transc_Record.get(allRooms.get(req.roomNum))});
 				//io.emit('startTimeResponse', dt);
 			}
 		}       
