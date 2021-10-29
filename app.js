@@ -768,7 +768,7 @@ io.on('connection', (socket) => {
 					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score, thisRound_Record: record});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
-						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間', Room: thisRoom});
+						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間', Room: thisRoom, Record:thisRoom.admin_transc_Record.get(0)});
 					}
 					thisRoom.Users.set(data.ID, { name:data.name, username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0, myRecord:[]});		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
