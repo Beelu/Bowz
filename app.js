@@ -525,7 +525,8 @@ app.post("/downloadCSV", (req,res) => {
 	var msg;
 	var _record;
 
-	try{				
+	try{			
+		/*	
 		var createTranscReocrdCSV = {
 			RoomNum: req.body.roomNum,
 			transactions: req.body.record
@@ -537,7 +538,7 @@ app.post("/downloadCSV", (req,res) => {
 			}
 			msg = "successfully create TranscReocrdCSV";
 		});
-
+		*/
         async function findReocrd() {
 			try {
 
@@ -545,7 +546,7 @@ app.post("/downloadCSV", (req,res) => {
 					const database = client.db("myFirstDatabase");
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
-					const query = { RoomNum: req.body.roomNum };
+					const query = { RoomNum: "123" };
 					const _rrecord = await transcrecordcsvs_model.find(query).toArray();
 					_record = _rrecord;
 					
