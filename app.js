@@ -1003,7 +1003,7 @@ io.on('connection', (socket) => {
 					value.is_admin_transc = 0;
 				});
 				
-				
+				allRooms.get(req.roomNum).admin_transc_times = 0;
 				io.sockets.in(req.roomNum).emit('endRoundResponse','endRoundMessage');
 			}
 		}       
@@ -1326,44 +1326,38 @@ io.on('connection', (socket) => {
                 var thisRound = data.round//獲取本回合
                 var money = Number(data.money);//交易金額
 
-                //var payer = data.payer_id//獲取付款者ID
-				//var payer_money = allUsers.get(payer).money
                 var receiver = allUsers.get(data.receiver_id);//獲取付款者ID
                 var receiverSocket = receiver.socketID;
 		
                 var chek_point = 1;
 				var used_times  = thisRoom.admin_transc_times;
                 var limit_times = Number(data.limit_times);
-		/*
-		if(payer_money==0){
-			allUsers.get(payer).money = 99999;
-		}
-		*/
-        try {
-            if((used_times<limit_times) || (limit_times==-1)){
-				if(receiver.is_admin_transc==0){
-						receiver.money += Number(money);
-						receiver.score += Number(money);
 
-						thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
-						io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-						receiver.is_admin_transc=1;
-						used_times+=1;
-				}else{
-						chek_point = -2;
-						io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+				try {
+					if((used_times<limit_times) || (limit_times==-1)){
+						if(receiver.is_admin_transc==0){
+								receiver.money += Number(money);
+								receiver.score += Number(money);
+
+								thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
+								io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+								receiver.is_admin_transc=1;
+								used_times+=1;
+						}else{
+								chek_point = -2;
+								io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+						}
+									
+					}
+					else{
+						chek_point = -1;
+						io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+					}
 				}
-							
-			}
-			else{
-				chek_point = -1;
-				io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-			}
-        }
-        catch(e){
-            chek_point = 0;
-            io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
-        }
+				catch(e){
+					chek_point = 0;
+					io.sockets.to(receiverSocket).emit('get_admin_transc_rsp',  { point:chek_point, round: thisRoom.round[Number(thisRound)] });
+				}
             thisRoom.admin_transc_times = used_times;
         });
 
