@@ -527,8 +527,8 @@ app.post("/downloadCSV", (req,res) => {
 	try{				
 
 		var createTranscReocrdCSV = {
-			RoomNum: req.roomNum,
-			transactions: req.record
+			RoomNum: req.body.roomNum,
+			transactions: req.body.record
 		};
 	
 		TranscReocrdCSV.create(createTranscReocrdCSV, (err, newRoom) => {
