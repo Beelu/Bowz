@@ -1338,8 +1338,11 @@ io.on('connection', (socket) => {
 						if(receiver.is_admin_transc==0){
 								receiver.money += Number(money);
 								receiver.score += Number(money);
-
-								thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
+								try{
+									thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
+								}catch(e){
+									
+								}
 								io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
 								receiver.is_admin_transc=1;
 								used_times+=1;
