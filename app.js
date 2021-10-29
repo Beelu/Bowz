@@ -768,7 +768,7 @@ io.on('connection', (socket) => {
 					socket.emit('enterRoom_resp',{status:0, msg:'已在房間，僅連接socket', user: thisUser, newToken: newToken, score: thisUser.score, thisRound_Record: record});//回應enterRoom
 				}else{
 					if(thisRoom.isGaming){
-						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間', Room: thisRoom, Record:thisRoom.admin_transc_Record.get(0)});
+						return socket.emit('enterRoom_resp',{status:3, msg:'遊戲已開始，無法進入房間', Room: thisRoom});
 					}
 					thisRoom.Users.set(data.ID, { name:data.name, username: data.username, money: thisRoom.initMoney, isManager: false ,price : 0,score:0, socketID:null, is_admin_transc:0, myRecord:[]});		//設定進入使用者的資料
 					thisRoom.total = thisRoom.Users.size;
@@ -843,16 +843,21 @@ io.on('connection', (socket) => {
 							}
 							allUsers.forEach(logAllUsersElements_Round)
 
+							csv_data = csv_data + "老師發放 \r\n ";
 							try{
-								csv_data = csv_data + " 老師發放 \r\n 回合, 玩家編號,金額,得分 \r\n";
-
-								let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
-								let round_num = i+1;
-								for(let j=0; j<admin_transc_record.length; j++){
-									csv_data = csv_data + round_num +","+ admin_transc_record[j].name +","+ admin_transc_record[j].money +","+ admin_transc_record[j].score;
+								if(thisRoom.admin_transc_Record.get(i)){
+									let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
+									csv_data = csv_data + "回合, 玩家編號,金額,得分 \r\n";
+								
+									let round_num = i+1;
+									for(let j=0; j<admin_transc_record.length; j++){
+										csv_data = csv_data + round_num +","+ admin_transc_record[j].name +","+ admin_transc_record[j].money +","+ admin_transc_record[j].score;
+									}
+								}else{
+									csv_data = csv_data + "沒有紀錄! \r\n";
 								}
 							}catch(e){
-
+								csv_data = csv_data + "error!! \r\n";
 							}
 						}
 
