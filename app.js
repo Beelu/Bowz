@@ -526,7 +526,7 @@ app.post("/downloadCSV", (req,res) => {
 	var _record;
 
 	try{			
-		
+		/*
 		var createTranscRecordCSV = {
 			RoomNum: req.body.roomNum,
 			transactions: req.body.record
@@ -538,10 +538,9 @@ app.post("/downloadCSV", (req,res) => {
 			}
 			msg = "successfully create TranscReocrdCSV";
 		});
-		/*
+		*/
         async function findReocrd() {
 			try {
-
 					await client.connect();
 					const database = client.db("myFirstDatabase");
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
@@ -555,8 +554,8 @@ app.post("/downloadCSV", (req,res) => {
 			}
 		}
 		findReocrd();
-		*/
-		res.json({msg: msg});
+		
+		res.json(_record);
 	}
 	catch(e){
 		msg = "未知的錯誤";
