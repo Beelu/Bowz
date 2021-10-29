@@ -944,8 +944,8 @@ io.on('connection', (socket) => {
 				let currentTime = new Date();
 				let tmpTime = currentTime.getTime();
 				let expireTime = new Date();
-				let admin_transc_record = [];
-				allRooms.get(req.roomNum).admin_transc_Record.set(req.roomNum.nowRound+1, admin_transc_record);
+				let _record = [];
+				allRooms.get(req.roomNum).admin_transc_Record.set(req.roomNum.nowRound+1, _record);
 
 				expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
 				allRooms.get(req.roomNum).expireTime = expireTime		
@@ -1341,7 +1341,7 @@ io.on('connection', (socket) => {
 								try{
 									thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
 								}catch(e){
-									
+
 								}
 								io.sockets.to(receiverSocket).emit('get_admin_transc_rsp', { point:chek_point, round: thisRoom.round[Number(thisRound)] });
 								receiver.is_admin_transc=1;
