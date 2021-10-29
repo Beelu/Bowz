@@ -556,7 +556,7 @@ app.post("/downloadCSV", (req,res) => {
 			}
 		}
 		findReocrd();
-		res.json({msg: msg, record:_record});
+		res.json({msg: msg});
 	}
 	catch(e){
 		msg = "未知的錯誤";
