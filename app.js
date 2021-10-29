@@ -537,11 +537,24 @@ app.post("/downloadCSV", (req,res) => {
 			msg = "successfully create TranscReocrdCSV";
 		});
 
-		const query = {};
-		const record_ =  TranscReocrdCSV.find(query).toArray();
+        async function findReocrd() {
+			var room_list = []
+			try {
 
-		res.json(record_);
-		
+					await client.connect();
+					const database = client.db("myFirstDatabase");
+					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
+
+					const query = { RoomNum: req.body.roomNum };
+					const record = await transcrecordcsvs_model.find(query).toArray();
+
+					res.json({msg: msg, record:record});
+			} catch(e){
+					msg = msg + "failed find room..."
+					res.json({msg: msg});
+			}
+		}
+		findReocrd();
 	}
 	catch(e){
 		msg = "未知的錯誤";
