@@ -534,7 +534,7 @@ app.post("/downloadCSV", (req,res) => {
 	
 		TranscReocrdCSV.create(createTranscReocrdCSV, (err, newRoom) => {
 			if (err) {
-				return res.json({message:err})
+				msg = "create error";
 			}
 			msg = "successfully create TranscReocrdCSV";
 		});
@@ -551,8 +551,7 @@ app.post("/downloadCSV", (req,res) => {
 					_record = _rrecord;
 					
 			} catch(e){
-					msg = msg + "failed find room..."
-					res.json({msg: msg});
+					msg = msg + "failed find room...";
 			}
 		}
 		findReocrd();
