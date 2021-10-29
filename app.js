@@ -27,7 +27,7 @@ var express = require("express"),
 	transaction = require('./models/transaction'),
 	record = require('./models/record'),
 	room = require('./models/room'),
-	TranscReocrdCSV = require('./models/TranscReocrd_CSV'),
+	TranscReocrdCSV = require('./models/TranscRecord_CSV'),
 	async = require("async"),
 	nodemailer = require("nodemailer"),
 	crypto = require("crypto"),
@@ -526,7 +526,7 @@ app.post("/downloadCSV", (req,res) => {
 	var _record;
 
 	try{			
-		/*	
+		
 		var createTranscReocrdCSV = {
 			RoomNum: req.body.roomNum,
 			transactions: req.body.record
@@ -538,7 +538,7 @@ app.post("/downloadCSV", (req,res) => {
 			}
 			msg = "successfully create TranscReocrdCSV";
 		});
-		*/
+		
         async function findReocrd() {
 			try {
 
