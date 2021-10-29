@@ -542,7 +542,7 @@ app.post("/downloadCSV", (req,res) => {
 					msg = msg+ "error found!";
 				}
 				//jiji
-				var record_ = foundrecord;
+				var record_ = foundrecord.toArray;
 				res.json({message:"successfully create TranscReocrdCSV.", record: record_});
 		});
 		
