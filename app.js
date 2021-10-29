@@ -851,7 +851,7 @@ io.on('connection', (socket) => {
 								
 									let round_num = i+1;
 									for(let value of _record){
-										csv_data = csv_data + round_num +","+ value.name +","+ value.money +","+ value.score;
+										csv_data = csv_data + round_num +","+ value.name +","+ value.money +","+ value.score +"\r\n";
 									}
 								}else{
 									csv_data = csv_data + "沒有紀錄! \r\n";
@@ -958,7 +958,7 @@ io.on('connection', (socket) => {
 				totalChartData.set(req.roomNum,chartData);
 				allRooms.get(req.roomNum).nowRound+=1;
 				allRooms.get(req.roomNum).isGaming = true;
-				io.sockets.in(req.roomNum).emit('startGameResponse', {msg:'success', admin_transc_Record:allRooms.get(req.roomNum).admin_transc_Record.get(allRooms.get(req.roomNum))});
+				io.sockets.in(req.roomNum).emit('startGameResponse', {msg:'success', admin_transc_Record:allRooms.get(req.roomNum).admin_transc_Record.get(allRooms.get(req.roomNum).record )});
 				//io.emit('startTimeResponse', dt);
 			}
 		}       
@@ -1344,7 +1344,7 @@ io.on('connection', (socket) => {
 								receiver.money += Number(money);
 								receiver.score += Number(money);
 								try{
-									thisRoom.admin_transc_Record.get(thisRoom.nowRound).push({name: receiver.name, money:receiver.money, score:receiver.score})
+									thisRoom.admin_transc_Record.get(thisRoom.nowRound).record.push({name: receiver.name, money:receiver.money, score:receiver.score})
 								}catch(e){
 
 								}
