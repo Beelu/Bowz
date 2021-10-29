@@ -873,7 +873,7 @@ io.on('connection', (socket) => {
 
 						//將csv檔存入雲端資料庫
 						var createTranscRecordCSV = {
-							RoomNum: req.body.roomNum,
+							RoomNum: data.roomNum,
 							transactions: csv_data
 						};
 					
