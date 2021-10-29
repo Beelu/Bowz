@@ -846,12 +846,12 @@ io.on('connection', (socket) => {
 							csv_data = csv_data + "老師發放 \r\n";
 							try{
 								if(thisRoom.admin_transc_Record.get(i)){
-									const _record = thisRoom.admin_transc_Record.get(i).record;//push({name: receiver.name, money:receiver.money, score:receiver.score})
-									csv_data = csv_data + "回合,玩家編號,金額,得分 \r\n";
+									const _record = thisRoom.admin_transc_Record.get(i).record;//push({name: receiver.name, tran_money: money, user_money:receiver.money, score:receiver.score})
+									csv_data = csv_data + "回合,玩家編號,發放金額,玩家發放後金額,發放後得分 \r\n";
 								
 									let round_num = i+1;
 									for(let value of _record){
-										csv_data = csv_data + round_num +","+ value.name +","+ value.money +","+ value.score +"\r\n";
+										csv_data = csv_data + round_num +","+ value.name +","+ value.tran_money +","+value.user_money +","+ value.score +"\r\n";
 									}
 								}else{
 									csv_data = csv_data + "沒有紀錄! \r\n";
@@ -1344,7 +1344,7 @@ io.on('connection', (socket) => {
 								receiver.money += Number(money);
 								receiver.score += Number(money);
 								try{
-									thisRoom.admin_transc_Record.get(thisRoom.nowRound).record.push({name: receiver.name, money:receiver.money, score:receiver.score})
+									thisRoom.admin_transc_Record.get(thisRoom.nowRound).record.push({name: receiver.name, tran_money: money, user_money:receiver.money, score:receiver.score})
 								}catch(e){
 
 								}
