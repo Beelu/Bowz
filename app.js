@@ -541,6 +541,7 @@ app.post("/downloadCSV", (req,res) => {
 				if(err){
 					msg = msg+ "error found!";
 				}
+				//jiji
 				var record_ = foundrecord;
 				res.json({message:"successfully create TranscReocrdCSV.", record: record_});
 		});
