@@ -538,7 +538,7 @@ app.post("/downloadCSV", (req,res) => {
 			}
 			msg = "successfully create TranscReocrdCSV";
 		});
-		
+		/*
         async function findReocrd() {
 			try {
 
@@ -555,6 +555,7 @@ app.post("/downloadCSV", (req,res) => {
 			}
 		}
 		findReocrd();
+		*/
 		res.json({msg: msg});
 	}
 	catch(e){
