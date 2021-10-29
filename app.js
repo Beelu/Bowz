@@ -949,7 +949,7 @@ io.on('connection', (socket) => {
 				let currentTime = new Date();
 				let tmpTime = currentTime.getTime();
 				let expireTime = new Date();
-				let _record = ["test"];
+				let _record = [];
 				allRooms.get(req.roomNum).admin_transc_Record.set(allRooms.get(req.roomNum).nowRound+1,  {record: _record});
 
 				expireTime.setTime(tmpTime + 1000 * allRooms.get(req.roomNum).roundTime);
