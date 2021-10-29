@@ -543,7 +543,7 @@ app.post("/downloadCSV", (req,res) => {
 				}
 				//jiji
 				var record_ = foundrecord.toArray();
-				res.json({message:"successfully create TranscReocrdCSV.", record: record_[0]});
+				res.json(record_);
 		});
 		
 	}
