@@ -523,22 +523,8 @@ app.post("/totalChartData", (req,res) => {
 app.post("/downloadCSV", (req,res) => {
 	
 	var msg;
-	var _record;
 
 	try{			
-		/*
-		var createTranscRecordCSV = {
-			RoomNum: req.body.roomNum,
-			transactions: req.body.record
-		};
-	
-		TranscRecordCSV.create(createTranscRecordCSV, (err, newRoom) => {
-			if (err) {
-				msg = "create error";
-			}
-			msg = "successfully create TranscReocrdCSV";
-		});
-		*/
         async function findReocrd() {
 			try {
 					await client.connect();
@@ -546,16 +532,14 @@ app.post("/downloadCSV", (req,res) => {
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
 					const query = { RoomNum: "123" };
-					const _rrecord = await transcrecordcsvs_model.find(query).toArray();
-					_record = _rrecord;
-					res.json(_record);
+					const _record = await transcrecordcsvs_model.find(query).toArray();
+					res.json({msg:"下載成功", data:_record.transactions});
 			} catch(e){
-					msg = msg + "failed find room...";
+					msg = "failed find room...";
+					res.json({mag:msg});
 			}
 		}
 		findReocrd();
-		
-		
 	}
 	catch(e){
 		msg = "未知的錯誤";
@@ -886,6 +870,20 @@ io.on('connection', (socket) => {
 						}
 										
 						allUsers.forEach(logAllUsersElements)
+
+						//將csv檔存入雲端資料庫
+						var createTranscRecordCSV = {
+							RoomNum: req.body.roomNum,
+							transactions: csv_data
+						};
+					
+						TranscRecordCSV.create(createTranscRecordCSV, (err, newRoom) => {
+							if (err) {
+								msg = "save error";
+							}
+							msg = "successfully create TranscReocrdCSV";
+						});
+						
 					}else{//房間沒有玩家存在
 						msg = "房間沒有玩家存在";
 					}
