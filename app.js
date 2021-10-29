@@ -537,7 +537,7 @@ app.post("/downloadCSV", (req,res) => {
 			msg = "successfully create TranscReocrdCSV";
 		});
 
-		TranscReocrdCSV.find({ RoomNum: "123" }, function(err, foundrecord) {
+		TranscReocrdCSV.find({ RoomNum: 123 }, function(err, foundrecord) {
 				if(err){
 					msg = msg+ "error found!";
 				}
