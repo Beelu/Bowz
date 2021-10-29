@@ -537,8 +537,8 @@ app.post("/downloadCSV", (req,res) => {
 			msg = "successfully create TranscReocrdCSV";
 		});
 
-		let query = {};
-		var record_ = await TranscReocrdCSV.find(query).toArray();
+		const query = {};
+		const record_ =  TranscReocrdCSV.find(query).toArray();
 
 		res.json(record_);
 		
