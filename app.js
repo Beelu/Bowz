@@ -818,7 +818,7 @@ io.on('connection', (socket) => {
 					let allUsers = thisRoom.Users;
 
 					if(allUsers){
-						csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
+						
 						
 						//個人交易紀錄
 						//payer.myRecord.push({userid: data.receiver_id, role:"payer", price: money, score:pay_score, status:1});
@@ -826,6 +826,7 @@ io.on('connection', (socket) => {
 						for(let i=0; i<thisRoom.round.length; i++){
 							function logAllUsersElements_Round(value, key, map) {
 								try{
+									csv_data = "回合,玩家編號,身分,金額,成交,得分 \r\n";
 									let role = value.myRecord[i].role;
 									let price = value.myRecord[i].price;
 									let score = value.myRecord[i].score;
