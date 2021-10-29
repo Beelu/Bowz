@@ -546,8 +546,8 @@ app.post("/downloadCSV", (req,res) => {
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
 					const query = { RoomNum: req.body.roomNum };
-					_record = await transcrecordcsvs_model.find(query).toArray();
-
+					const _rrecord = await transcrecordcsvs_model.find(query).toArray();
+					_record = _rrecord;
 					
 			} catch(e){
 					msg = msg + "failed find room..."
