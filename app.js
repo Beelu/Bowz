@@ -544,8 +544,8 @@ app.post("/downloadCSV", (req,res) => {
 					const database = client.db("myFirstDatabase");
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
-					const query = {};
-					const _record = await transcrecordcsvs_model.find(query).toArray();
+					const query = { RoomNum: req.body.roomNum };
+					const _record = await transcrecordcsvs_model.findOne(query).toArray();
 
 					res.json({msg: msg, record:_record[0].transactions});
 			} catch(e){
