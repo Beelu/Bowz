@@ -846,11 +846,11 @@ io.on('connection', (socket) => {
 							csv_data = csv_data + "老師發放 \r\n";
 							try{
 								if(thisRoom.admin_transc_Record.get(i)){
-									let admin_transc_record = thisRoom.admin_transc_Record.get(i);//push({name: receiver.name, money:receiver.money, score:receiver.score})
+									const _record = thisRoom.admin_transc_Record.get(i).record;//push({name: receiver.name, money:receiver.money, score:receiver.score})
 									csv_data = csv_data + "回合,玩家編號,金額,得分 \r\n";
 								
 									let round_num = i+1;
-									for(let value of admin_transc_record){
+									for(let value of _record){
 										csv_data = csv_data + round_num +","+ value.name +","+ value.money +","+ value.score;
 									}
 								}else{
