@@ -1,0 +1,7 @@
+.env
+debug.log
+cert.pem
+server-cert.pem
+server-key.pem
+fullchain.pem
+privkey.pem
