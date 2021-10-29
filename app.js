@@ -538,7 +538,6 @@ app.post("/downloadCSV", (req,res) => {
 		});
 
         async function findReocrd() {
-			var room_list = []
 			try {
 
 					await client.connect();
@@ -546,9 +545,9 @@ app.post("/downloadCSV", (req,res) => {
 					const transcrecordcsvs_model = database.collection("transcrecordcsvs");
 
 					const query = { RoomNum: req.body.roomNum };
-					const record = await transcrecordcsvs_model.find(query).toArray();
+					const _record = await transcrecordcsvs_model.find(query).toArray();
 
-					res.json({msg: msg, record:record});
+					res.json({msg: msg, record:_record[0].transactions});
 			} catch(e){
 					msg = msg + "failed find room..."
 					res.json({msg: msg});
